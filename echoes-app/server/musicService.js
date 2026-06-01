@@ -1,6 +1,17 @@
 // musicService.js - 可插拔 AI 音乐生成服务
 const axios = require('axios')
 
+// 延迟 require 避免循环依赖
+let _generateLyricsWithQwen = null
+function getQwenLyricsFn() {
+  if (!_generateLyricsWithQwen) {
+    try {
+      _generateLyricsWithQwen = require('./chatService').generateLyricsWithQwen
+    } catch (_) {}
+  }
+  return _generateLyricsWithQwen
+}
+
 // ─── 情绪风格配置 ────────────────────────────────────────────────
 const emotionMusicStyles = {
   melancholy: {
@@ -118,6 +129,19 @@ const sonicPalettes = {
 
 const negativePrompt = 'avoid generic cinematic strings, avoid epic trailer orchestral, avoid overused ambient pads, avoid EDM drop, avoid loud over-processed mixing'
 
+// 简单的内存歌词缓存：song 生成时存，status 查询时取
+// 重启后丢失，但 song 生成完成后前端已经拿到了 lyrics
+const lyricsCache = new Map()
+const LYRICS_CACHE_MAX = 200
+function rememberLyrics(taskId, lyrics) {
+  if (!taskId || !lyrics) return
+  lyricsCache.set(String(taskId), String(lyrics))
+  if (lyricsCache.size > LYRICS_CACHE_MAX) {
+    const firstKey = lyricsCache.keys().next().value
+    lyricsCache.delete(firstKey)
+  }
+}
+
 function pickPalette(emotion) {
   const list = sonicPalettes[emotion] || sonicPalettes.calm
   return list[Math.floor(Math.random() * list.length)]
@@ -154,6 +178,21 @@ function isRichStyleHint(styleHint) {
   return (hasBpm || hasGenre) && hasInstruments
 }
 
+function pickPaletteCompatible(emotion, styleHint) {
+  const wantsMale = /male vocal|mandarin male/i.test(styleHint || '')
+  const wantsFemale = /female vocal|mandarin female/i.test(styleHint || '')
+  const list = sonicPalettes[emotion] || sonicPalettes.calm
+  // 如果用户明确要某种性别声音，过滤掉冲突的 palette
+  let candidates = list
+  if (wantsMale) {
+    candidates = list.filter(p => !/female vocal/i.test(p))
+  } else if (wantsFemale) {
+    candidates = list.filter(p => !/male vocal/i.test(p))
+  }
+  if (candidates.length === 0) candidates = list
+  return candidates[Math.floor(Math.random() * candidates.length)]
+}
+
 function buildMusicPrompt({ emotion, userText, prompt, styleHint }) {
   if (prompt) return prompt
   const rich = isRichStyleHint(styleHint)
@@ -165,7 +204,7 @@ function buildMusicPrompt({ emotion, userText, prompt, styleHint }) {
   }
 
   // styleHint 太泛或为空，用 palette 兜底
-  const palette = pickPalette(emotion)
+  const palette = pickPaletteCompatible(emotion, styleHint)
   const hint = styleHint ? `Style direction: ${styleHint}. ` : ''
   return `Instrumental music, no vocals. ${journal}${hint}Sonic palette: ${palette}. ${negativePrompt}.`
 }
@@ -178,7 +217,7 @@ function buildSongPrompt({ emotion, userText, styleHint }) {
     return `Original song with vocals. ${journal}Style: ${styleHint}. ${negativePrompt}.`
   }
 
-  const palette = pickPalette(emotion)
+  const palette = pickPaletteCompatible(emotion, styleHint)
   const hint = styleHint ? `Style direction: ${styleHint}. ` : ''
   return `Original song with vocals. ${journal}${hint}Sonic palette: ${palette}. ${negativePrompt}.`
 }
@@ -210,15 +249,19 @@ function normalizeInstrumentalResult({ provider, emotion, prompt, raw }) {
     data.id || data.task_id || data.taskId || data.trace_id || data.generation_id ||
     raw?.id || raw?.task_id || raw?.taskId || raw?.trace_id
 
-  const audioUrl =
-    data.audio_url || data.audioUrl || data.music_url ||
-    data.stream_url ||
-    data?.choices?.[0]?.url || data?.choices?.[0]?.stream_url ||
-    data?.choices?.[0]?.wav_url || data?.choices?.[0]?.flac_url ||
+  // 区分稳定 url 和流式 url
+  const stableUrl =
+    data?.choices?.[0]?.url ||
+    data?.choices?.[0]?.wav_url ||
+    data?.choices?.[0]?.flac_url ||
+    data.audio_url || data.audioUrl || data.music_url || data.url ||
     raw?.audio_url || raw?.music_url || raw?.url
+  const streamUrl = data?.choices?.[0]?.stream_url || data.stream_url
+
+  const audioUrl = stableUrl || streamUrl
 
   const rawStatus = String(data.status || raw?.status || '').toLowerCase()
-  const status = audioUrl
+  const status = stableUrl
     ? 'completed'
     : ['preparing', 'queued', 'pending', 'processing', 'running', 'streaming', 'created'].includes(rawStatus)
       ? 'processing'
@@ -231,12 +274,17 @@ function normalizeInstrumentalResult({ provider, emotion, prompt, raw }) {
     taskId,
     status,
     audioUrl,
+    isStable: Boolean(stableUrl),
+    isStreaming: !stableUrl && Boolean(streamUrl),
     musicType: 'instrumental',
     data: {
       music_url: audioUrl,
       audio_url: audioUrl,
+      stable_url: stableUrl,
+      stream_url: streamUrl,
       task_id: taskId,
       status,
+      raw_status: rawStatus,
       provider,
       musicType: 'instrumental',
       title: style.title,
@@ -248,7 +296,7 @@ function normalizeInstrumentalResult({ provider, emotion, prompt, raw }) {
   }
 }
 
-function normalizeSongResult({ provider, emotion, prompt, raw }) {
+function normalizeSongResult({ provider, emotion, prompt, raw, injectedLyrics }) {
   const style = getStyle(emotion)
   const data = raw?.data || raw || {}
 
@@ -256,20 +304,25 @@ function normalizeSongResult({ provider, emotion, prompt, raw }) {
     data.id || data.task_id || data.taskId ||
     raw?.id || raw?.task_id
 
-  const audioUrl =
+  // 区分稳定 url 和流式 url
+  const stableUrl =
     data?.choices?.[0]?.url ||
-    data?.choices?.[0]?.stream_url ||
     data?.choices?.[0]?.wav_url ||
+    data?.choices?.[0]?.flac_url ||
     data.audio_url || data.url ||
     raw?.url
+  const streamUrl = data?.choices?.[0]?.stream_url
+
+  const audioUrl = stableUrl || streamUrl
 
   const lyrics =
+    injectedLyrics ||
     data?.choices?.[0]?.lyrics ||
     data?.lyrics ||
     raw?.lyrics || ''
 
   const rawStatus = String(data.status || raw?.status || '').toLowerCase()
-  const status = audioUrl
+  const status = stableUrl
     ? 'completed'
     : ['preparing', 'queued', 'pending', 'processing', 'running', 'streaming'].includes(rawStatus)
       ? 'processing'
@@ -282,12 +335,17 @@ function normalizeSongResult({ provider, emotion, prompt, raw }) {
     taskId,
     status,
     audioUrl,
+    isStable: Boolean(stableUrl),
+    isStreaming: !stableUrl && Boolean(streamUrl),
     musicType: 'song',
     data: {
       music_url: audioUrl,
       audio_url: audioUrl,
+      stable_url: stableUrl,
+      stream_url: streamUrl,
       task_id: taskId,
       status,
+      raw_status: rawStatus,
       provider,
       musicType: 'song',
       title: style.title,
@@ -400,7 +458,7 @@ async function generateLyricsWithMureka({ emotion, userText, styleHint }) {
   return { lyrics, title, prompt: lyricsPrompt }
 }
 
-async function generateSongWithMureka({ emotion, userText, prompt, styleHint, lyrics: providedLyrics }) {
+async function generateSongWithMureka({ emotion, userText, prompt, styleHint, lyrics: providedLyrics, musicTitle }) {
   const cfg = getMurekaConfig()
   if (!cfg.apiKey || cfg.apiKey === 'YOUR_MUREKA_API_KEY') {
     throw new Error('Mureka API key is not configured')
@@ -410,9 +468,23 @@ async function generateSongWithMureka({ emotion, userText, prompt, styleHint, ly
   let songPrompt = prompt
 
   if (!lyrics) {
-    const lyricsResult = await generateLyricsWithMureka({ emotion, userText, styleHint })
-    lyrics = lyricsResult.lyrics
-    songPrompt = songPrompt || lyricsResult.prompt
+    // 优先用千问写歌词（中文能力强，能扣用户上下文，避免 Mureka 套路化的"雨滴/窗台"陈词）
+    const qwenFn = getQwenLyricsFn()
+    if (qwenFn) {
+      try {
+        const qwenLyrics = await qwenFn({ userText, styleHint, emotion, musicTitle })
+        lyrics = qwenLyrics.lyrics
+        console.log('🎼 [Lyrics from Qwen] ✓')
+      } catch (e) {
+        console.log('🎼 [Lyrics from Qwen failed, fallback to Mureka]', e.message)
+      }
+    }
+    // 回退：用 Mureka 写
+    if (!lyrics) {
+      const lyricsResult = await generateLyricsWithMureka({ emotion, userText, styleHint })
+      lyrics = lyricsResult.lyrics
+      songPrompt = songPrompt || lyricsResult.prompt
+    }
   }
 
   songPrompt = buildSongPrompt({ emotion, userText, styleHint })
@@ -429,12 +501,15 @@ async function generateSongWithMureka({ emotion, userText, prompt, styleHint, ly
     }
   )
 
-  return normalizeSongResult({
+  const result = normalizeSongResult({
     provider: 'mureka',
     emotion,
     prompt: songPrompt,
-    raw: response.data
+    raw: response.data,
+    injectedLyrics: lyrics
   })
+  rememberLyrics(result.taskId, lyrics)
+  return result
 }
 
 async function getMurekaSongStatus(taskId) {
@@ -451,7 +526,8 @@ async function getMurekaSongStatus(taskId) {
     provider: 'mureka',
     emotion: 'calm',
     prompt: '',
-    raw: response.data
+    raw: response.data,
+    injectedLyrics: lyricsCache.get(String(taskId)) || ''
   })
 }
 

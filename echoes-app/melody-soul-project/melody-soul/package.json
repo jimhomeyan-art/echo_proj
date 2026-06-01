@@ -1,8 +1,9 @@
 {
-  "name": "react_repo",
+  "name": "echoes-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "description": "Echoes - 情绪音乐 AI Web 端",
   "scripts": {
     "dev": "pnpm install --prefer-offline && vite",
     "build": "pnpm install --prefer-offline && rm -rf node_modules/.vite-temp && tsc -b && vite build",

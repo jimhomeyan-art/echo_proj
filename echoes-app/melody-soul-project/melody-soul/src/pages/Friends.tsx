@@ -3,10 +3,12 @@ import { Search, Bell, Plus, Phone, Video, MoreVertical, Send, Smile } from 'luc
 import { Avatar } from '../components/common/Avatar';
 import { friends, chatMessages } from '../data/friendsData';
 import { currentUser } from '../data/mockData';
+import { useChat } from '../context/ChatContext';
 
 export const FriendsPage: React.FC = () => {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const { nowPlaying } = useChat();
 
   const onlineFriends = friends.filter(f => f.status === 'online');
   const offlineFriends = friends.filter(f => f.status === 'offline');
@@ -184,7 +186,10 @@ export const FriendsPage: React.FC = () => {
           </header>
 
           {/* Chat Messages */}
-          <main className="max-w-md mx-auto px-5 py-4 pb-24">
+          <main
+            className="max-w-md mx-auto px-5 py-4 transition-[padding] duration-300"
+            style={{ paddingBottom: nowPlaying ? '220px' : '150px' }}
+          >
             <div className="space-y-4">
               {(chatMessages[selectedFriend] || []).map((msg) => {
                 const isMe = msg.senderId === 'me';
@@ -236,8 +241,11 @@ export const FriendsPage: React.FC = () => {
             </div>
           </main>
 
-          {/* Message Input */}
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100">
+          {/* Message Input - 在 BottomNav(64px) 上方，MiniPlayer 显示时再上推 72px */}
+          <div
+            className="fixed left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-soft transition-[bottom] duration-300"
+            style={{ bottom: nowPlaying ? 'calc(64px + 72px)' : '64px' }}
+          >
             <div className="max-w-md mx-auto px-5 py-3">
               <div className="flex items-center gap-3">
                 <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors">

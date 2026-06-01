@@ -66,7 +66,7 @@ app.post('/api/chat', async (req, res) => {
 // 情绪配乐生成接口
 app.post('/api/music/generate', async (req, res) => {
   try {
-    const { emotion, userText, prompt, musicType, styleHint } = req.body
+    const { emotion, userText, prompt, musicType, styleHint, musicTitle } = req.body
 
     if (!emotion && !prompt) {
       return res.status(400).json({
@@ -83,7 +83,7 @@ app.post('/api/music/generate', async (req, res) => {
       styleHint
     })
 
-    const result = await generateMusic({ emotion, userText, prompt, musicType, styleHint })
+    const result = await generateMusic({ emotion, userText, prompt, musicType, styleHint, musicTitle })
     res.json(result)
   } catch (error) {
     console.error('❌ Music generation failed:', error.response?.data || error.message)
