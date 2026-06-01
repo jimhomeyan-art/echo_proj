@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Mic, Sparkles, Clock, Share2, Heart, Download, X, Music2 } from 'lucide-react'
+import { Send, Mic, Sparkles, Clock, Share2, Heart, Download, X, Music2, Play, Pause } from 'lucide-react'
 import { sendChatMessage, type ChatMessage } from '../services/chat'
 import { generateEmotionMusic, type MusicGenerationResult } from '../services/music'
 import { useChat, type ChatBubbleMessage, type ChatMusicCard } from '../context/ChatContext'
@@ -140,7 +140,13 @@ function toApiMessages(messages: Message[], nextUserText?: string): ChatMessage[
 
 export const CreatePage: React.FC = () => {
   const chat = useChat()
-  const { messages, setMessages, collectedTextRef, isTyping, setIsTyping, activeMusicGen, setActiveMusicGen, setNowPlaying, nowPlaying, openFullPlayer } = chat
+  const {
+    messages, setMessages, collectedTextRef, isTyping, setIsTyping,
+    activeMusicGen, setActiveMusicGen,
+    setNowPlaying, setNowPlayingSilent, nowPlaying, isPlaying,
+    openFullPlayer, togglePlay,
+    isCapsuled, toggleCapsule,
+  } = chat
   const [inputValue, setInputValue] = useState('')
   const [showHistory, setShowHistory] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>(() => pickRandomSuggestions(5))
@@ -262,17 +268,26 @@ export const CreatePage: React.FC = () => {
         error: result.error
       })
 
-      // 把生成完成的音乐推到全局 MiniPlayer 自动播放
+      // 把生成完成的音乐推到全局 MiniPlayer
+      // 行为规则：如果当前有别的音乐正在播放，则不打断，只静默写入卡片；用户主动点才播
       if (result.musicUrl) {
-        setNowPlaying({
+        const trackPayload = {
           id: musicMsgId,
           title: finalTitle,
           cover: defaultMusicCover,
           artist: 'Echoes AI',
           url: result.musicUrl,
           lyrics: finalLyrics,
-          creator: currentUser.name
-        })
+          creator: currentUser.name,
+          mood: params.emotion,
+        }
+        const hasActiveAudio = Boolean(nowPlaying?.url) && isPlaying
+        if (hasActiveAudio) {
+          // 不打断：只更新音乐卡片本身，MiniPlayer 维持当前歌
+          // 用户可以在音乐卡片里点播放按钮切换
+        } else {
+          setNowPlaying(trackPayload)
+        }
       }
     } catch (err) {
       updateMusicMessage(musicMsgId, {
@@ -510,23 +525,74 @@ export const CreatePage: React.FC = () => {
                             打开歌曲详情
                           </button>
                         )}
-                        {!message.music.isGenerating && message.music.url && (
-                          <div className="mt-3 flex items-center justify-end gap-2">
-                            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                              <Heart className="w-4 h-4 text-text-secondary" />
-                            </button>
-                            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                              <Share2 className="w-4 h-4 text-text-secondary" />
-                            </button>
-                            <a
-                              href={message.music.url}
-                              download
-                              className="p-2 rounded-full gradient-primary shadow-primary"
-                            >
-                              <Download className="w-4 h-4 text-white" />
-                            </a>
-                          </div>
-                        )}
+                        {!message.music.isGenerating && message.music.url && (() => {
+                          const m = message.music!
+                          const isCurrent = nowPlaying?.id === m.id
+                          const showPause = isCurrent && isPlaying
+                          const liked = isCapsuled(m.id)
+                          return (
+                            <div className="mt-3 flex items-center justify-between gap-2">
+                              <button
+                                onClick={() => {
+                                  if (isCurrent) {
+                                    togglePlay()
+                                  } else {
+                                    setNowPlaying({
+                                      id: m.id,
+                                      title: m.title,
+                                      cover: m.cover,
+                                      artist: 'Echoes AI',
+                                      url: m.url,
+                                      lyrics: m.lyrics,
+                                      creator: m.creator || currentUser.name,
+                                      mood: m.mood,
+                                    })
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-full gradient-primary shadow-primary text-white text-xs font-medium btn-press"
+                              >
+                                {showPause
+                                  ? <Pause className="w-3.5 h-3.5" fill="white" />
+                                  : <Play className="w-3.5 h-3.5 ml-0.5" fill="white" />}
+                                {showPause ? '暂停' : '播放'}
+                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => {
+                                    toggleCapsule({
+                                      id: m.id,
+                                      title: m.title,
+                                      cover: m.cover,
+                                      duration: m.duration,
+                                      url: m.url,
+                                      mood: m.mood,
+                                      styleTag: m.style,
+                                      createdAt: new Date().toISOString().slice(0, 10),
+                                      plays: 0,
+                                      source: 'created',
+                                      creator: m.creator || currentUser.name,
+                                      lyrics: m.lyrics,
+                                    })
+                                  }}
+                                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${liked ? 'text-secondary' : 'text-text-secondary'}`}
+                                  title={liked ? '已收入胶囊' : '收入胶囊'}
+                                >
+                                  <Heart className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} />
+                                </button>
+                                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                  <Share2 className="w-4 h-4 text-text-secondary" />
+                                </button>
+                                <a
+                                  href={m.url}
+                                  download
+                                  className="p-2 rounded-full gradient-primary shadow-primary"
+                                >
+                                  <Download className="w-4 h-4 text-white" />
+                                </a>
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
                   </div>

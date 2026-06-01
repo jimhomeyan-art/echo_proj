@@ -48,6 +48,7 @@ echoes-app/echoes-web/vite.err
 smoke-test.cjs
 chat-debug.png
 debug-chat.cjs
+jianghu_readme.txt
 *.tmp
 *.temp
 

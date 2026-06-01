@@ -8,7 +8,7 @@ import { useChat } from '../context/ChatContext';
 export const FriendsPage: React.FC = () => {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const { nowPlaying } = useChat();
+  const { nowPlaying, isPlaying, setNowPlaying, togglePlay, openFullPlayer } = useChat();
 
   const onlineFriends = friends.filter(f => f.status === 'online');
   const offlineFriends = friends.filter(f => f.status === 'offline');
@@ -212,7 +212,21 @@ export const FriendsPage: React.FC = () => {
                           isMe ? 'rounded-br-md' : 'rounded-bl-md'
                         }`}>
                           <div className="flex items-center gap-3 p-3">
-                            <div className="w-12 h-12 rounded-lg overflow-hidden">
+                            <div
+                              className="w-12 h-12 rounded-lg overflow-hidden cursor-pointer"
+                              onClick={() => {
+                                if (!msg.music) return;
+                                setNowPlaying({
+                                  id: msg.music.id,
+                                  title: msg.music.title,
+                                  cover: msg.music.cover,
+                                  artist: friends.find(f => f.id === selectedFriend)?.name,
+                                  url: msg.music.url,
+                                  mood: msg.music.mood,
+                                });
+                                openFullPlayer();
+                              }}
+                            >
                               <img
                                 src={msg.music?.cover}
                                 alt=""
@@ -223,10 +237,34 @@ export const FriendsPage: React.FC = () => {
                               <p className="text-sm font-medium text-text-primary truncate">{msg.music?.title}</p>
                               <p className="text-xs text-text-secondary">{msg.music?.duration}</p>
                             </div>
-                            <button className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                              <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
+                            <button
+                              onClick={() => {
+                                if (!msg.music) return;
+                                const isCurrent = nowPlaying?.id === msg.music.id;
+                                if (isCurrent) {
+                                  togglePlay();
+                                } else {
+                                  setNowPlaying({
+                                    id: msg.music.id,
+                                    title: msg.music.title,
+                                    cover: msg.music.cover,
+                                    artist: friends.find(f => f.id === selectedFriend)?.name,
+                                    url: msg.music.url,
+                                    mood: msg.music.mood,
+                                  });
+                                }
+                              }}
+                              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center btn-press"
+                            >
+                              {nowPlaying?.id === msg.music?.id && isPlaying ? (
+                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              )}
                             </button>
                           </div>
                         </div>

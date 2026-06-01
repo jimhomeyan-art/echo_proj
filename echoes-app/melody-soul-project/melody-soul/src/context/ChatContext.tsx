@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react'
+import { initialSavedCapsules } from '../data/mockData'
 
 export interface ChatMusicCard {
   id: string
@@ -42,6 +43,23 @@ export interface NowPlaying {
   url?: string
   lyrics?: string
   creator?: string
+  mood?: string
+}
+
+/** 胶囊（用户收藏的音乐 + 自创音乐）条目 */
+export interface CapsuleEntry {
+  id: string
+  title: string
+  cover?: string
+  duration?: string
+  url?: string
+  mood?: string        // 创作时的情绪 / 收藏时的情绪
+  styleTag?: string
+  createdAt: string    // 入胶囊时间
+  plays: number
+  source: 'created' | 'liked'  // 自创 or 喜欢
+  creator?: string
+  lyrics?: string
 }
 
 interface ChatContextValue {
@@ -54,6 +72,8 @@ interface ChatContextValue {
   setActiveMusicGen: React.Dispatch<React.SetStateAction<boolean>>
   nowPlaying: NowPlaying | null
   setNowPlaying: (np: NowPlaying | null) => void
+  /** 仅写入 nowPlaying（用作 MiniPlayer 上待播任务），不强行 play() */
+  setNowPlayingSilent: (np: NowPlaying | null) => void
   isPlaying: boolean
   setIsPlaying: (p: boolean) => void
   audioRef: React.MutableRefObject<HTMLAudioElement | null>
@@ -62,6 +82,12 @@ interface ChatContextValue {
   isFullPlayerOpen: boolean
   openFullPlayer: () => void
   closeFullPlayer: () => void
+  // 胶囊
+  capsules: CapsuleEntry[]
+  addCapsule: (c: CapsuleEntry) => void
+  removeCapsule: (id: string) => void
+  isCapsuled: (id: string) => boolean
+  toggleCapsule: (c: CapsuleEntry) => boolean  // 返回操作后的状态 true=已收藏
 }
 
 const initialGreeting: ChatBubbleMessage = {
@@ -74,6 +100,28 @@ const initialGreeting: ChatBubbleMessage = {
 
 const ChatContext = createContext<ChatContextValue | null>(null)
 
+const STORAGE_KEY_CAPSULES = 'echoes.capsules.v1'
+
+function loadCapsules(): CapsuleEntry[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_CAPSULES)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  // 第一次：把 mock 里 initialSavedCapsules 灌进来
+  return initialSavedCapsules.map(c => ({
+    id: c.id,
+    title: c.title,
+    cover: c.cover,
+    duration: c.duration,
+    url: c.url,
+    mood: c.mood,
+    styleTag: c.styleTag,
+    createdAt: c.createdAt,
+    plays: c.plays,
+    source: 'created' as const,
+  }))
+}
+
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatBubbleMessage[]>([initialGreeting])
   const [isTyping, setIsTyping] = useState(false)
@@ -81,20 +129,31 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [nowPlaying, setNowPlayingState] = useState<NowPlaying | null>(null)
   const [isPlaying, setIsPlayingState] = useState(false)
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState(false)
+  const [capsules, setCapsules] = useState<CapsuleEntry[]>(() => loadCapsules())
   const collectedTextRef = useRef<string>('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY_CAPSULES, JSON.stringify(capsules)) } catch {}
+  }, [capsules])
 
   const openFullPlayer = useCallback(() => setIsFullPlayerOpen(true), [])
   const closeFullPlayer = useCallback(() => setIsFullPlayerOpen(false), [])
 
+  /** 主动播放：用户点了播放、切歌等 → 写入并自动播 */
   const setNowPlaying = useCallback((np: NowPlaying | null) => {
     setNowPlayingState(np)
     if (np?.url) {
-      // 自动开始播放
       setIsPlayingState(true)
     } else {
       setIsPlayingState(false)
     }
+  }, [])
+
+  /** 静默写入：仅展示，不打断当前 audio */
+  const setNowPlayingSilent = useCallback((np: NowPlaying | null) => {
+    setNowPlayingState(np)
+    // 不动 isPlaying
   }, [])
 
   const setIsPlaying = useCallback((p: boolean) => {
@@ -106,6 +165,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // src 变化时主动 reload，否则浏览器不会切换音轨
+  // 仅当 isPlaying=true 时才 .play()；静默写入不会触发自动播放
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -113,12 +173,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       audio.pause()
       return
     }
-    // 强制重新加载新音频源
     audio.load()
-    audio.play().catch(err => {
-      console.warn('Audio autoplay blocked:', err.message)
-      setIsPlayingState(false)
-    })
+    if (isPlaying) {
+      audio.play().catch(err => {
+        console.warn('Audio autoplay blocked:', err.message)
+        setIsPlayingState(false)
+      })
+    }
+    // 注意：故意不把 isPlaying 加进依赖，避免暂停时回放
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nowPlaying?.url])
 
   // 同步 isPlaying ↔ audio.play/pause
@@ -144,6 +207,28 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     collectedTextRef.current = ''
   }, [])
 
+  // ===== 胶囊 =====
+  const addCapsule = useCallback((c: CapsuleEntry) => {
+    setCapsules(prev => prev.some(x => x.id === c.id) ? prev : [c, ...prev])
+  }, [])
+  const removeCapsule = useCallback((id: string) => {
+    setCapsules(prev => prev.filter(x => x.id !== id))
+  }, [])
+  const isCapsuled = useCallback((id: string) => capsules.some(x => x.id === id), [capsules])
+  const toggleCapsule = useCallback((c: CapsuleEntry) => {
+    let nextHas = false
+    setCapsules(prev => {
+      const exist = prev.some(x => x.id === c.id)
+      if (exist) {
+        nextHas = false
+        return prev.filter(x => x.id !== c.id)
+      }
+      nextHas = true
+      return [c, ...prev]
+    })
+    return nextHas
+  }, [])
+
   return (
     <ChatContext.Provider value={{
       messages,
@@ -155,6 +240,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setActiveMusicGen,
       nowPlaying,
       setNowPlaying,
+      setNowPlayingSilent,
       isPlaying,
       setIsPlaying,
       audioRef,
@@ -162,7 +248,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       resetChat,
       isFullPlayerOpen,
       openFullPlayer,
-      closeFullPlayer
+      closeFullPlayer,
+      capsules,
+      addCapsule,
+      removeCapsule,
+      isCapsuled,
+      toggleCapsule,
     }}>
       {children}
       {/* 全局 audio 元素：跨 Tab 切换不会停 */}
@@ -174,7 +265,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         onPlay={() => setIsPlayingState(true)}
         onPause={() => setIsPlayingState(false)}
         onError={() => {
-          console.warn('Audio source failed to load (可能流式 URL 已过期)')
+          console.warn('Audio source failed to load (可能流式 URL 已过期，或 seed 文件还没生成)')
           setIsPlayingState(false)
         }}
         style={{ display: 'none' }}

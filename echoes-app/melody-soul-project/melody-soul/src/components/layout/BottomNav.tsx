@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, MessageCircle, Sparkles, Mic2, User } from 'lucide-react';
+import { Radio, MessageCircle, Sparkles, Pill, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -10,7 +10,7 @@ const navItems = [
   { id: 'channel', icon: Radio, label: '频道' },
   { id: 'friends', icon: MessageCircle, label: '好友' },
   { id: 'create', icon: Sparkles, label: '创作', isCenter: true },
-  { id: 'capsules', icon: Mic2, label: '胶囊' },
+  { id: 'capsules', icon: Pill, label: '胶囊' },
   { id: 'profile', icon: User, label: '我的' },
 ];
 

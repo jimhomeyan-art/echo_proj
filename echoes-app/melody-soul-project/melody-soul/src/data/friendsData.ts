@@ -1,4 +1,5 @@
 // Mock data for friends/chat
+import { getSeed, seedAudioUrl } from './seedMusic'
 
 export const friends = [
   {
@@ -73,6 +74,8 @@ export const chatMessages: Record<string, Array<{
     title: string;
     cover: string;
     duration: string;
+    url?: string;
+    mood?: string;
   };
   timestamp: string;
   isRead: boolean;
@@ -100,10 +103,12 @@ export const chatMessages: Record<string, Array<{
       type: 'music',
       content: '这首是我刚完成的',
       music: {
-        id: 's1',
-        title: '星河漫游',
-        cover: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=400&fit=crop',
-        duration: '3:45',
+        id: 'friend-galaxy',
+        title: getSeed('seed-galaxy-drift')!.title,
+        cover: getSeed('seed-galaxy-drift')!.cover,
+        duration: getSeed('seed-galaxy-drift')!.duration,
+        url: seedAudioUrl('seed-galaxy-drift'),
+        mood: getSeed('seed-galaxy-drift')!.mood,
       },
       timestamp: '今天 10:35',
       isRead: true,

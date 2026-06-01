@@ -2,12 +2,26 @@ import React from 'react';
 import { Music, Heart, ListMusic, Clock, Play, MoreHorizontal, Folder, Plus } from 'lucide-react';
 import { Avatar } from '../components/common/Avatar';
 import { myLibrary, currentUser } from '../data/mockData';
+import { useChat } from '../context/ChatContext';
 
 type TabType = 'created' | 'liked' | 'playlists';
 
 export const LibraryPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<TabType>('created');
   const [selectedSong, setSelectedSong] = React.useState<string | null>(null);
+  const { setNowPlaying, openFullPlayer } = useChat();
+
+  function playLibrarySong(song: any) {
+    setNowPlaying({
+      id: song.id,
+      title: song.title,
+      cover: song.cover,
+      artist: song.artist || currentUser.name,
+      url: song.url,
+      mood: song.mood,
+    });
+    openFullPlayer();
+  }
 
   return (
     <div className="min-h-screen pb-20">
@@ -72,9 +86,9 @@ export const LibraryPage: React.FC = () => {
             {myLibrary.created.map((song, index) => (
               <div
                 key={song.id}
-                className="flex items-center gap-3 bg-surface rounded-2xl p-4 animate-slide-up card-hover"
+                className="flex items-center gap-3 bg-surface rounded-2xl p-4 animate-slide-up card-hover cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
-                onClick={() => setSelectedSong(selectedSong === song.id ? null : song.id)}
+                onClick={() => playLibrarySong(song)}
               >
                 <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
                   <img
@@ -118,8 +132,9 @@ export const LibraryPage: React.FC = () => {
             {myLibrary.liked.map((song, index) => (
               <div
                 key={song.id}
-                className="flex items-center gap-3 bg-surface rounded-2xl p-4 animate-slide-up card-hover"
+                className="flex items-center gap-3 bg-surface rounded-2xl p-4 animate-slide-up card-hover cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
+                onClick={() => playLibrarySong(song)}
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                   <img

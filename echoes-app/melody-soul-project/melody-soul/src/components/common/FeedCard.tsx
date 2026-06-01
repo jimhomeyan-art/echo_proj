@@ -25,6 +25,8 @@ interface FeedCardProps {
     createdAt: string;
     isLiked: boolean;
   };
+  /** 外部覆盖收藏态（如来自胶囊全局） */
+  isLiked?: boolean;
   onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
@@ -33,11 +35,13 @@ interface FeedCardProps {
 
 export const FeedCard: React.FC<FeedCardProps> = ({
   post,
+  isLiked,
   onLike,
   onComment,
   onShare,
   onPlay,
 }) => {
+  const liked = isLiked !== undefined ? isLiked : post.isLiked;
   return (
     <div className="bg-white rounded-2xl p-4 animate-fade-in shadow-soft">
       {/* Header */}
@@ -75,14 +79,14 @@ export const FeedCard: React.FC<FeedCardProps> = ({
           className={`
             flex items-center gap-2 px-3 py-2 rounded-xl
             transition-all duration-300 btn-press
-            ${post.isLiked ? 'text-secondary' : 'text-text-secondary hover:text-secondary'}
+            ${liked ? 'text-secondary' : 'text-text-secondary hover:text-secondary'}
           `}
         >
           <Heart
             className="w-5 h-5"
-            fill={post.isLiked ? 'currentColor' : 'none'}
+            fill={liked ? 'currentColor' : 'none'}
           />
-          <span className="text-sm font-medium">{post.likes}</span>
+          <span className="text-sm font-medium">{post.likes + (liked && !post.isLiked ? 1 : 0)}</span>
         </button>
 
         <button

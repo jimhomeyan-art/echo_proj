@@ -3,12 +3,26 @@ import { Search, Bell, Wifi, WifiOff, Send, Heart, MessageCircle, UserPlus, Play
 import { Avatar } from '../components/common/Avatar';
 import { FeedCard } from '../components/common/FeedCard';
 import { feedPosts, recommendedUsers, currentUser } from '../data/mockData';
+import { useChat } from '../context/ChatContext';
 
 export const ChannelPage: React.FC = () => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [currentFrequency, setCurrentFrequency] = useState(285);
   const [selectedMood, setSelectedMood] = useState('平静');
   const [activeSection, setActiveSection] = useState<'feed' | 'frequency'>('feed');
+  const { setNowPlaying, openFullPlayer, toggleCapsule, isCapsuled } = useChat();
+
+  function playPostMusic(post: typeof feedPosts[number]) {
+    setNowPlaying({
+      id: post.music.id,
+      title: post.music.title,
+      cover: post.music.cover,
+      artist: post.user.name,
+      url: post.music.url,
+      mood: post.music.mood,
+    });
+    openFullPlayer();
+  }
 
   const moods = ['平静', '忧郁', '兴奋', '开心', '浪漫', '沉思'];
 
@@ -141,7 +155,10 @@ export const ChannelPage: React.FC = () => {
                         <p className="text-sm font-semibold text-white truncate">{post.music.title}</p>
                         <p className="text-xs text-white/70 truncate">@{post.user.username}</p>
                       </div>
-                      <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                      <button
+                        onClick={() => playPostMusic(post)}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center btn-press"
+                      >
                         <Play className="w-4 h-4 text-primary" fill="#6366F1" />
                       </button>
                     </div>
@@ -167,10 +184,25 @@ export const ChannelPage: React.FC = () => {
                 >
                   <FeedCard
                     post={post}
-                    onLike={() => console.log('Like', post.id)}
+                    onLike={() => {
+                      toggleCapsule({
+                        id: post.music.id,
+                        title: post.music.title,
+                        cover: post.music.cover,
+                        duration: post.music.duration,
+                        url: post.music.url,
+                        mood: post.music.mood,
+                        styleTag: post.music.styleTag,
+                        createdAt: new Date().toISOString().slice(0, 10),
+                        plays: 0,
+                        source: 'liked',
+                        creator: post.user.name,
+                      });
+                    }}
+                    isLiked={isCapsuled(post.music.id) || post.isLiked}
                     onComment={() => console.log('Comment', post.id)}
                     onShare={() => console.log('Share', post.id)}
-                    onPlay={() => console.log('Play', post.id)}
+                    onPlay={() => playPostMusic(post)}
                   />
                 </div>
               ))}
