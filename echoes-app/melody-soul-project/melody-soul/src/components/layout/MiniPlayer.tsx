@@ -2,13 +2,17 @@ import React from 'react'
 import { Play, Pause, SkipBack, SkipForward, ChevronUp } from 'lucide-react'
 import { useChat } from '../../context/ChatContext'
 import { EchoAvatar } from '../common/EchoAvatar'
+import { ProgressBar } from '../common/ProgressBar'
 
 interface MiniPlayerProps {
   onExpand?: () => void
 }
 
 export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
-  const { nowPlaying, isPlaying, togglePlay, audioRef, openFullPlayer } = useChat()
+  const {
+    nowPlaying, isPlaying, togglePlay, audioRef, openFullPlayer,
+    currentTime, duration, seek,
+  } = useChat()
 
   // 没有正在播放的音乐时，不显示
   if (!nowPlaying) return null
@@ -18,6 +22,13 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
 
   return (
     <div className="fixed bottom-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100 shadow-lg">
+      {/* 顶部贴边的细进度条 */}
+      <ProgressBar
+        variant="mini"
+        currentTime={currentTime}
+        duration={duration}
+        onSeek={seek}
+      />
       <div
         className="max-w-md mx-auto p-3 flex items-center gap-3 cursor-pointer btn-press"
         onClick={handleExpand}

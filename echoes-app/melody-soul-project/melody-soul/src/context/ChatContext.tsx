@@ -82,6 +82,10 @@ interface ChatContextValue {
   isFullPlayerOpen: boolean
   openFullPlayer: () => void
   closeFullPlayer: () => void
+  // 进度
+  currentTime: number  // 秒
+  duration: number     // 秒，未加载时为 0
+  seek: (sec: number) => void
   // 胶囊
   capsules: CapsuleEntry[]
   addCapsule: (c: CapsuleEntry) => void
@@ -130,6 +134,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlayingState] = useState(false)
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState(false)
   const [capsules, setCapsules] = useState<CapsuleEntry[]>(() => loadCapsules())
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
   const collectedTextRef = useRef<string>('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -169,6 +175,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
+    // 切歌：进度归零
+    setCurrentTime(0)
+    setDuration(0)
     if (!nowPlaying?.url) {
       audio.pause()
       return
@@ -205,6 +214,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsTyping(false)
     setActiveMusicGen(false)
     collectedTextRef.current = ''
+  }, [])
+
+  // 跳转到指定秒数
+  const seek = useCallback((sec: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    const dur = isFinite(audio.duration) ? audio.duration : 0
+    if (!dur) return
+    const clamped = Math.max(0, Math.min(sec, dur))
+    audio.currentTime = clamped
+    setCurrentTime(clamped)
   }, [])
 
   // ===== 胶囊 =====
@@ -249,6 +269,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       isFullPlayerOpen,
       openFullPlayer,
       closeFullPlayer,
+      currentTime,
+      duration,
+      seek,
       capsules,
       addCapsule,
       removeCapsule,
@@ -264,6 +287,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         onEnded={() => setIsPlayingState(false)}
         onPlay={() => setIsPlayingState(true)}
         onPause={() => setIsPlayingState(false)}
+        onTimeUpdate={e => setCurrentTime((e.target as HTMLAudioElement).currentTime || 0)}
+        onLoadedMetadata={e => {
+          const d = (e.target as HTMLAudioElement).duration
+          setDuration(isFinite(d) ? d : 0)
+          setCurrentTime((e.target as HTMLAudioElement).currentTime || 0)
+        }}
+        onDurationChange={e => {
+          const d = (e.target as HTMLAudioElement).duration
+          setDuration(isFinite(d) ? d : 0)
+        }}
         onError={() => {
           console.warn('Audio source failed to load (可能流式 URL 已过期，或 seed 文件还没生成)')
           setIsPlayingState(false)

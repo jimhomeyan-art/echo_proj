@@ -2,13 +2,17 @@ import React, { useEffect } from 'react'
 import { ChevronDown, Play, Pause, SkipBack, SkipForward, Heart, Share2, Download, MoreVertical } from 'lucide-react'
 import { useChat } from '../../context/ChatContext'
 import { EchoAvatar } from '../common/EchoAvatar'
+import { ProgressBar } from '../common/ProgressBar'
 
 /**
  * 全屏歌曲详情 - 类似 Spotify / 网易云
- * 显示：封面、标题、创作者、分段歌词、播放控件
+ * 显示：封面、标题、创作者、分段歌词、播放控件、进度条
  */
 export const FullPlayer: React.FC = () => {
-  const { isFullPlayerOpen, closeFullPlayer, nowPlaying, isPlaying, togglePlay, audioRef } = useChat()
+  const {
+    isFullPlayerOpen, closeFullPlayer, nowPlaying, isPlaying, togglePlay, audioRef,
+    currentTime, duration, seek,
+  } = useChat()
 
   // 阻止 body 背景滚动
   useEffect(() => {
@@ -127,6 +131,15 @@ export const FullPlayer: React.FC = () => {
 
         {/* 控件 */}
         <div className="absolute left-0 right-0 bottom-0 px-6 pb-10 pt-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent">
+          {/* 进度条 */}
+          <ProgressBar
+            variant="full"
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={seek}
+            className="mb-4"
+          />
+
           <div className="flex items-center gap-2 mb-4">
             <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors">
               <Heart className="w-4 h-4" />
