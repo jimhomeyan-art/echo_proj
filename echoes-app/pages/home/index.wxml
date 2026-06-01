@@ -1,0 +1,141 @@
+<view class="page">
+  <!-- Fluid Background -->
+  <view class="fluid-background">
+    <view class="gradient-orb orb-1" style="background: {{gradientColors[0]}}"></view>
+    <view class="gradient-orb orb-2" style="background: {{gradientColors[1]}}"></view>
+    <view class="gradient-orb orb-3" style="background: {{gradientColors[2]}}"></view>
+
+    <!-- Particles -->
+    <view class="particles">
+      <view
+        wx:for="{{particles}}"
+        wx:key="id"
+        class="particle"
+        style="
+          left: {{item.x}}%;
+          top: {{item.y}}%;
+          width: {{item.size}}rpx;
+          height: {{item.size}}rpx;
+          animation-duration: {{item.duration}}s;
+          animation-delay: {{item.delay}}s;
+        "
+      ></view>
+    </view>
+  </view>
+
+  <!-- Status Bar Spacer -->
+  <view class="status-bar"></view>
+
+  <!-- Header -->
+  <view class="header">
+    <view class="logo-section">
+      <view class="logo-icon">
+        <view class="logo-inner"></view>
+      </view>
+      <text class="logo-text">Echoes</text>
+    </view>
+    <text class="greeting">{{timeGreeting}}</text>
+  </view>
+
+  <!-- Main Content -->
+  <view class="main-content">
+    <!-- Input Section -->
+    <view class="input-section" wx:if="{{currentStep === 'input'}}">
+      <view class="input-container glass">
+        <textarea
+          class="emotion-input"
+          placeholder="此刻，你的思绪在飘向何方..."
+          placeholder-class="input-placeholder"
+          maxlength="500"
+          bindinput="onInputChange"
+          bindfocus="onInputFocus"
+          bindblur="onInputBlur"
+          value="{{inputText}}"
+        ></textarea>
+
+        <view class="input-footer">
+          <text class="char-count">{{inputText.length}}/500</text>
+          <view class="input-actions">
+            <view class="voice-btn" catchtap="onVoiceInput">
+              <view class="voice-icon {{isRecording ? 'recording' : ''}}"></view>
+            </view>
+            <button class="submit-btn btn-primary" catchtap="onSubmit">
+              <text>倾诉</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Analyzing Section -->
+    <view class="analyzing-section" wx:if="{{currentStep === 'analyzing'}}">
+      <view class="analyzing-container">
+        <view class="analyzing-orbs">
+          <view class="orb"></view>
+          <view class="orb"></view>
+          <view class="orb"></view>
+        </view>
+        <text class="analyzing-text">正在倾听你的心声...</text>
+        <text class="analyzing-subtext">AI 正在解读情绪频率</text>
+      </view>
+    </view>
+
+    <!-- Result Section -->
+    <view class="result-section" wx:if="{{currentStep === 'result'}}">
+      <!-- Emotion Display -->
+      <view class="emotion-result glass animate-slideUp">
+        <text class="section-title">情绪画像</text>
+        <emotion-display
+          emotions="{{emotionResult.emotions}}"
+          dominant="{{emotionResult.dominant}}"
+          intensity="{{emotionResult.intensity}}"
+        />
+      </view>
+
+      <!-- Music Player -->
+      <view class="music-section animate-slideUp" style="animation-delay: 0.2s">
+        <text class="section-title">为你谱写的配乐</text>
+        <music-player
+          music="{{currentMusic}}"
+          auto-play="{{isPlaying}}"
+        />
+      </view>
+
+      <!-- Actions -->
+      <view class="result-actions animate-slideUp" style="animation-delay: 0.4s">
+        <button class="action-btn btn-secondary" catchtap="onSaveCapsule">
+          <view class="action-icon capsule-icon"></view>
+          <text>存入胶囊</text>
+        </button>
+        <button class="action-btn btn-secondary" catchtap="onNewAnalysis">
+          <view class="action-icon refresh-icon"></view>
+          <text>新的倾诉</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- Recent Emotions -->
+    <view class="recent-section" wx:if="{{currentStep === 'input' && recentEmotions.length > 0}}">
+      <text class="section-label">最近的回响</text>
+      <scroll-view scroll-x class="recent-scroll">
+        <view class="recent-list">
+          <view
+            wx:for="{{recentEmotions}}"
+            wx:key="id"
+            class="recent-card"
+            catchtap="onEmotionHistoryTap"
+            data-emotion="{{item}}"
+          >
+            <view class="recent-content">
+              <text class="recent-text">{{item.text}}</text>
+              <text class="recent-time">{{item.createdAt}}</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- Tab Bar -->
+  <tab-bar id="tab-bar" />
+</view>

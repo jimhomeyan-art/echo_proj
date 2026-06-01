@@ -1,0 +1,459 @@
+/* Channel.css */
+
+.channel-page {
+  min-height: 100vh;
+  padding-bottom: 120px;
+}
+
+/* Frequency Card */
+.frequency-card {
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+}
+
+.frequency-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.frequency-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.frequency-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #E07A5F;
+  border-radius: 50%;
+  animation: radarPing 2s ease-out infinite;
+}
+
+@keyframes radarPing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.frequency-label {
+  font-size: 12px;
+  color: #778DA9;
+}
+
+.frequency-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.freq-number {
+  font-size: 48px;
+  font-weight: 200;
+  color: #fff;
+  letter-spacing: -2px;
+}
+
+.freq-unit {
+  font-size: 16px;
+  color: #778DA9;
+}
+
+/* Emotion Selector */
+.emotion-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.emotion-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #778DA9;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.emotion-pill.active {
+  background: rgba(224, 122, 95, 0.15);
+  border-color: #E07A5F;
+  color: #fff;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Radar Section */
+.radar-section {
+  margin-bottom: 32px;
+}
+
+.radar-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 24px auto;
+}
+
+.radar-container.active {
+  animation: radarFlash 0.5s ease-out;
+}
+
+@keyframes radarFlash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+.radar-circles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+}
+
+.circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.circle.c1 { width: 33%; height: 33%; }
+.circle.c2 { width: 66%; height: 66%; }
+.circle.c3 { width: 100%; height: 100%; }
+
+.radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 2px;
+  transform-origin: left center;
+  overflow: hidden;
+}
+
+.sweep-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #E07A5F, transparent);
+  transform: rotate(-90deg);
+  transform-origin: left center;
+}
+
+.radar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+}
+
+.center-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: #E07A5F;
+  border-radius: 50%;
+}
+
+.center-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: #E07A5F;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: centerPulse 2s ease-out infinite;
+}
+
+@keyframes centerPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.user-point {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.point-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--point-color);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--point-color);
+}
+
+.user-point.pulse .point-dot {
+  animation: pointPulse 0.5s ease-out;
+}
+
+@keyframes pointPulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px var(--point-color); }
+  50% { transform: scale(1.5); box-shadow: 0 0 20px var(--point-color); }
+  100% { transform: scale(1); box-shadow: 0 0 10px var(--point-color); }
+}
+
+.radar-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.freq-label {
+  position: absolute;
+  font-size: 10px;
+  color: #415A77;
+}
+
+.freq-label.top { top: -12px; left: 50%; transform: translateX(-50%); }
+.freq-label.right { right: -12px; top: 50%; transform: translateY(-50%); }
+.freq-label.bottom { bottom: -12px; left: 50%; transform: translateX(-50%); }
+.freq-label.left { left: -12px; top: 50%; transform: translateY(-50%); }
+
+.resonance-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-text {
+  font-size: 12px;
+  color: #778DA9;
+}
+
+.broadcast-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(224, 122, 95, 0.15);
+  border: 1px solid #E07A5F;
+  border-radius: 999px;
+  color: #E07A5F;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.broadcast-icon {
+  width: 16px;
+  height: 16px;
+  background: #E07A5F;
+  border-radius: 50%;
+  position: relative;
+}
+
+.broadcast-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border: 2px solid #E07A5F;
+  border-radius: 50%;
+  animation: broadcastPulse 1.5s ease-out infinite;
+}
+
+@keyframes broadcastPulse {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Users Section */
+.users-section {
+  margin-bottom: 32px;
+}
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-card:hover {
+  background: rgba(27, 38, 59, 0.8);
+}
+
+.user-avatar {
+  position: relative;
+  margin-right: 16px;
+}
+
+.avatar-bg {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
+}
+
+.online-indicator {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: #81B29A;
+  border: 2px solid #0D1B2A;
+  border-radius: 50%;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 14px;
+  color: #fff;
+  display: block;
+}
+
+.user-freq {
+  font-size: 11px;
+  color: #778DA9;
+  display: block;
+  margin-top: 4px;
+}
+
+.resonance-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resonance-icon {
+  width: 16px;
+  height: 16px;
+  background: #778DA9;
+  border-radius: 50%;
+}
+
+/* Meteor Section */
+.meteor-section {
+  margin-bottom: 32px;
+}
+
+.meteor-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(224, 122, 95, 0.2), rgba(244, 132, 95, 0.2));
+  border: 1px solid rgba(224, 122, 95, 0.3);
+  border-radius: 16px;
+  position: relative;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.level-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  background: #E07A5F;
+  border-radius: 8px;
+  font-size: 10px;
+  color: white;
+}
+
+.meteor-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.meteor-head {
+  width: 12px;
+  height: 12px;
+  background: #E07A5F;
+  border-radius: 50%;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+}
+
+.meteor-trail {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%) rotate(-45deg);
+  width: 30px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #E07A5F);
+  border-radius: 2px;
+}

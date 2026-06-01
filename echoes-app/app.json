@@ -1,0 +1,42 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/channel/index",
+    "pages/capsule/index",
+    "pages/mine/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "light",
+    "navigationStyle": "custom",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#778DA9",
+    "selectedColor": "#E07A5F",
+    "backgroundColor": "rgba(13, 27, 42, 0.95)",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/channel/index",
+        "text": "频道"
+      },
+      {
+        "pagePath": "pages/capsule/index",
+        "text": "胶囊"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

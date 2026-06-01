@@ -1,0 +1,165 @@
+<view class="page">
+  <!-- Background -->
+  <view class="background">
+    <view class="gradient-layer"></view>
+  </view>
+
+  <!-- Status Bar -->
+  <view class="status-bar"></view>
+
+  <!-- Header -->
+  <view class="header">
+    <text class="page-title">时空胶囊</text>
+    <text class="page-subtitle">封存此刻，寄向未来</text>
+  </view>
+
+  <!-- Tabs -->
+  <view class="tabs">
+    <view
+      class="tab {{currentTab === 'capsules' ? 'active' : ''}}"
+      data-tab="capsules"
+      bindtap="onTabChange"
+    >
+      <text>我的胶囊</text>
+      <view class="tab-count" wx:if="{{capsules.length > 0}}">{{capsules.length}}</view>
+    </view>
+    <view
+      class="tab {{currentTab === 'echoes' ? 'active' : ''}}"
+      data-tab="echoes"
+      bindtap="onTabChange"
+    >
+      <text>收到的回响</text>
+      <view class="tab-count" wx:if="{{echoes.length > 0}}">{{echoes.length}}</view>
+    </view>
+  </view>
+
+  <!-- Content -->
+  <view class="content">
+    <!-- Capsules Tab -->
+    <view wx:if="{{currentTab === 'capsules'}}">
+      <!-- Empty State -->
+      <view class="empty-state" wx:if="{{capsules.length === 0 && !isLoading}}">
+        <view class="empty-icon">
+          <view class="capsule-icon">
+            <view class="capsule-body"></view>
+            <view class="capsule-cap"></view>
+          </view>
+        </view>
+        <text class="empty-title">还没有胶囊</text>
+        <text class="empty-desc">在首页倾诉后，可以将情绪与配乐存入时空胶囊</text>
+        <button class="btn-primary demo-btn" bindtap="generateDemoCapsules">
+          <text>生成示例胶囊</text>
+        </button>
+      </view>
+
+      <!-- Capsule List -->
+      <view class="capsule-list" wx:if="{{capsules.length > 0}}">
+        <view
+          wx:for="{{capsules}}"
+          wx:key="id"
+          class="capsule-card glass {{item.isLocked ? 'locked' : ''}}"
+          data-capsule="{{item}}"
+          bindtap="onCapsuleTap"
+        >
+          <!-- Lock Overlay -->
+          <view class="lock-overlay" wx:if="{{item.isLocked}}">
+            <view class="lock-icon"></view>
+            <text class="lock-text">{{formatDate(item.unlockAt)}}</text>
+          </view>
+
+          <!-- Card Header -->
+          <view class="card-header">
+            <view class="date-badge">
+              <text class="date-text">{{item.formattedDate}}</text>
+            </view>
+            <view class="emotion-tag" style="background: {{item.emotionColor}}20; color: {{item.emotionColor}}">
+              {{item.emotionLabel}}
+            </view>
+          </view>
+
+          <!-- Content Preview -->
+          <text class="card-content">{{item.content || '记忆已模糊，但情绪还在...'}}</text>
+
+          <!-- Music Info -->
+          <view class="music-info">
+            <view class="music-icon">
+              <view class="music-note"></view>
+            </view>
+            <text class="music-title">{{item.musicTitle || '无标题配乐'}}</text>
+          </view>
+
+          <!-- Footer -->
+          <view class="card-footer">
+            <view class="echoes-count" wx:if="{{item.echoes > 0}}">
+              <view class="echo-icon"></view>
+              <text>{{item.echoes}} 次回响</text>
+            </view>
+
+            <view class="public-status" wx:if="{{item.isPublic}}">
+              <view class="public-icon"></view>
+              <text>已公开</text>
+            </view>
+
+            <view class="delete-btn" catchtap="onDeleteCapsule" data-capsuleid="{{item.id}}">
+              <view class="delete-icon"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Echoes Tab -->
+    <view wx:if="{{currentTab === 'echoes'}}">
+      <!-- Empty State -->
+      <view class="empty-state" wx:if="{{echoes.length === 0}}">
+        <view class="empty-icon">
+          <view class="echo-icon-large"></view>
+        </view>
+        <text class="empty-title">暂无回响</text>
+        <text class="empty-desc">当你公开的胶囊被他人共情时，会收到回响</text>
+      </view>
+
+      <!-- Echo List -->
+      <view class="echo-list" wx:if="{{echoes.length > 0}}">
+        <view
+          wx:for="{{echoes}}"
+          wx:key="id"
+          class="echo-card glass"
+          data-echo="{{item}}"
+          bindtap="onEchoTap"
+        >
+          <view class="echo-header">
+            <view class="echo-type {{item.type}}">
+              <view class="echo-type-icon"></view>
+              <text>{{item.type === 'self' ? '一年前的自己' : '与你共情的人'}}</text>
+            </view>
+            <text class="echo-date">{{item.createdAt}}</text>
+          </view>
+
+          <text class="echo-message">{{item.message}}</text>
+
+          <view class="echo-preview">
+            <text>"{{item.preview}}"</text>
+          </view>
+
+          <view class="echo-footer">
+            <view class="music-tag" wx:if="{{item.musicTitle}}">
+              <view class="mini-music-icon"></view>
+              <text>{{item.musicTitle}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- FAB Button -->
+  <view class="fab-container" wx:if="{{currentTab === 'capsules'}}">
+    <view class="fab" bindtap="onCreateCapsule">
+      <view class="fab-icon"></view>
+    </view>
+  </view>
+
+  <!-- Tab Bar -->
+  <tab-bar id="tab-bar" />
+</view>

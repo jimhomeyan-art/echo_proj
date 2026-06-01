@@ -1,0 +1,105 @@
+<view class="page">
+  <!-- Background -->
+  <view class="background">
+    <view class="gradient-layer"></view>
+  </view>
+
+  <!-- Status Bar -->
+  <view class="status-bar"></view>
+
+  <!-- Header -->
+  <view class="header">
+    <view class="back-btn" bindtap="navigateBack">
+      <view class="back-icon"></view>
+    </view>
+    <text class="page-title">封存胶囊</text>
+    <view class="placeholder"></view>
+  </view>
+
+  <!-- Content -->
+  <view class="content">
+    <!-- Emotion Summary -->
+    <view class="emotion-summary glass">
+      <view class="summary-header">
+        <text class="summary-label">当前情绪</text>
+      </view>
+      <view class="emotion-display">
+        <view class="emotion-dot" style="background: {{emotionData?.color || '#778DA9'}}"></view>
+        <text class="emotion-name">{{emotionData?.label || '平静'}}</text>
+        <text class="emotion-intensity">{{emotionData?.intensity || 50}}% 强度</text>
+      </view>
+    </view>
+
+    <!-- Music Info -->
+    <view class="music-card glass" wx:if="{{music}}">
+      <view class="music-cover" style="background: linear-gradient(135deg, {{music.gradient[0]}}, {{music.gradient[1]}})">
+        <view class="cover-glow"></view>
+      </view>
+      <view class="music-info">
+        <text class="music-title">{{music.title}}</text>
+        <text class="music-artist">Echoes AI</text>
+      </view>
+    </view>
+
+    <!-- Additional Note -->
+    <view class="note-section">
+      <text class="section-label">想对未来说的话（选填）</text>
+      <textarea
+        class="note-input"
+        placeholder="记录此刻的想法，一年后回看..."
+        placeholder-class="note-placeholder"
+        maxlength="200"
+        bindinput="onAdditionalNoteInput"
+        value="{{additionalNote}}"
+      ></textarea>
+      <text class="char-count">{{additionalNote.length}}/200</text>
+    </view>
+
+    <!-- Original Text -->
+    <view class="original-section" wx:if="{{text}}">
+      <text class="section-label">倾诉内容</text>
+      <view class="original-card glass">
+        <text class="original-text">{{text}}</text>
+      </view>
+    </view>
+
+    <!-- Unlock Time -->
+    <view class="unlock-section">
+      <text class="section-label">解封时间</text>
+      <picker
+        mode="selector"
+        range="{{['1年后', '2年后', '3年后', '5年后']}}"
+        bindchange="onUnlockTimeChange"
+      >
+        <view class="unlock-picker glass">
+          <text class="unlock-value">{{unlockTime}}年后</text>
+          <view class="picker-arrow"></view>
+        </view>
+      </picker>
+      <text class="unlock-hint">将于 {{getUnlockDateDisplay()}} 解封</text>
+    </view>
+
+    <!-- Public Toggle -->
+    <view class="public-section">
+      <view class="public-toggle">
+        <view class="toggle-info">
+          <text class="toggle-title">公开胶囊</text>
+          <text class="toggle-desc">允许他人共情并回响</text>
+        </view>
+        <switch
+          checked="{{isPublic}}"
+          bindchange="onPublicChange"
+          color="#E07A5F"
+        />
+      </view>
+    </view>
+
+    <!-- Create Button -->
+    <view class="create-section">
+      <button class="create-btn btn-primary" bindtap="createCapsule">
+        <view class="capsule-icon-small"></view>
+        <text>封存此刻</text>
+      </button>
+    </view>
+  </view>
+</view>

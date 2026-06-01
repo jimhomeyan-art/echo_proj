@@ -1,0 +1,41 @@
+<view class="emotion-display">
+  <!-- Intensity Bar -->
+  <view class="intensity-section">
+    <text class="intensity-label">情绪强度</text>
+    <view class="intensity-bar">
+      <view class="intensity-fill" style="width: {{intensity}}%"></view>
+    </view>
+    <text class="intensity-value">{{intensity}}%</text>
+  </view>
+
+  <!-- Emotion Pills -->
+  <view class="emotions-container">
+    <view
+      wx:for="{{displayEmotions}}"
+      wx:key="type"
+      class="emotion-item animate-slideUp"
+      data-emotion="{{item}}"
+      bindtap="onEmotionTap"
+    >
+      <view class="emotion-card" style="--emotion-color: {{item.color}}">
+        <view class="emotion-glow"></view>
+        <view class="emotion-content">
+          <text class="emotion-label">{{item.label}}</text>
+          <view class="emotion-bar">
+            <view class="emotion-bar-fill" style="width: {{item.value}}%"></view>
+          </view>
+          <text class="emotion-percent">{{item.value}}%</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Dominant Emotion -->
+  <view class="dominant-section" wx:if="{{dominant}}">
+    <text class="dominant-label">主导情绪</text>
+    <view class="dominant-display">
+      <view class="dominant-dot" style="background: {{displayEmotions[0]?.color || '#778DA9'}}"></view>
+      <text class="dominant-text">{{displayEmotions[0]?.label || '平静'}}</text>
+    </view>
+  </view>
+</view>

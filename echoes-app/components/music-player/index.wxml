@@ -1,0 +1,60 @@
+<view class="music-player {{compact ? 'compact' : ''}}">
+  <!-- Cover & Info -->
+  <view class="player-header">
+    <view class="cover-wrapper">
+      <view
+        class="cover {{isPlaying ? 'playing' : ''}}"
+        style="background: linear-gradient(135deg, {{music.gradient[0] || '#415A77'}}, {{music.gradient[1] || '#1B263B'}})"
+      >
+        <view class="cover-inner">
+          <view class="cover-glow"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="info" wx:if="{{!compact}}">
+      <text class="title">{{music.title || '未命名'}}</text>
+      <text class="artist">{{music.artist || 'Echoes AI'}}</text>
+    </view>
+  </view>
+
+  <!-- Waveform Visualizer -->
+  <view class="waveform-container" wx:if="{{!compact}}">
+    <view class="waveform">
+      <view
+        wx:for="{{waveform}}"
+        wx:key="index"
+        class="wave-bar {{isPlaying ? 'active' : ''}}"
+        style="height: {{isPlaying ? item.height : 8}}rpx; animation-delay: {{item.delay}}ms"
+      ></view>
+    </view>
+  </view>
+
+  <!-- Progress -->
+  <view class="progress-section">
+    <text class="time current">{{formatTime(currentTime)}}</text>
+    <view class="progress-wrapper">
+      <view class="progress-track" bindtap="seek" bindtouchstart="onProgressStart" bindtouchend="onProgressEnd">
+        <view class="progress-bg"></view>
+        <view class="progress-fill" style="width: {{progress}}%"></view>
+        <view class="progress-thumb" style="left: {{progress}}%"></view>
+      </view>
+    </view>
+    <text class="time duration">{{formatTime(duration)}}</text>
+  </view>
+
+  <!-- Controls -->
+  <view class="controls">
+    <view class="control-btn secondary" catchtap="stop">
+      <view class="icon-stop"></view>
+    </view>
+
+    <view class="control-btn primary {{isPlaying ? 'playing' : ''}}" catchtap="togglePlay">
+      <view class="icon-play {{isPlaying ? 'pause' : 'play'}}"></view>
+    </view>
+
+    <view class="control-btn secondary">
+      <view class="icon-share"></view>
+    </view>
+  </view>
+</view>

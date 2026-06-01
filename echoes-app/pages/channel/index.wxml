@@ -1,0 +1,149 @@
+<view class="page">
+  <!-- Background -->
+  <view class="background">
+    <view class="gradient-layer"></view>
+  </view>
+
+  <!-- Status Bar -->
+  <view class="status-bar"></view>
+
+  <!-- Header -->
+  <view class="header">
+    <text class="page-title">即时频道</text>
+    <text class="page-subtitle">与同频者共振</text>
+  </view>
+
+  <!-- Main Content -->
+  <view class="content">
+    <!-- Frequency Display -->
+    <view class="frequency-card glass">
+      <view class="frequency-header">
+        <view class="frequency-icon">
+          <view class="frequency-wave"></view>
+        </view>
+        <text class="frequency-label">你的情绪频率</text>
+      </view>
+
+      <view class="frequency-value">
+        <text class="freq-number">{{userFrequency}}</text>
+        <text class="freq-unit">Hz</text>
+      </view>
+
+      <!-- Emotion Selector -->
+      <view class="emotion-selector">
+        <view
+          wx:for="{{['melancholy', 'solitude', 'calm', 'hope', 'confusion']}}"
+          wx:key="index"
+          class="emotion-pill {{dominantEmotion === item ? 'active' : ''}}"
+          data-emotion="{{item}}"
+          bindtap="onEmotionChange"
+        >
+          <view class="pill-dot" style="background: {{item === 'melancholy' ? '#778DA9' : item === 'solitude' ? '#415A77' : item === 'calm' ? '#81B29A' : item === 'hope' ? '#4EA8DE' : '#9D8DF1'}}"></view>
+          <text>{{item === 'melancholy' ? '忧郁' : item === 'solitude' ? '孤独' : item === 'calm' ? '平静' : item === 'hope' ? '希望' : '迷茫'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Resonance Radar -->
+    <view class="radar-section">
+      <text class="section-label">共振雷达</text>
+
+      <view class="radar-container {{resonanceEffect ? 'active' : ''}}">
+        <!-- Radar Circles -->
+        <view class="radar-circles">
+          <view class="circle c1"></view>
+          <view class="circle c2"></view>
+          <view class="circle c3"></view>
+        </view>
+
+        <!-- Radar Sweep -->
+        <view class="radar-sweep" style="transform: rotate({{radarAngle}}deg)">
+          <view class="sweep-line"></view>
+        </view>
+
+        <!-- Center Point -->
+        <view class="radar-center">
+          <view class="center-dot"></view>
+          <view class="center-pulse"></view>
+        </view>
+
+        <!-- User Points -->
+        <view
+          wx:for="{{radarData}}"
+          wx:key="id"
+          class="user-point {{item.pulse ? 'pulse' : ''}}"
+          style="
+            transform: rotate({{item.angle}}deg) translateY(-{{item.distance}}%);
+            --point-color: {{item.emotion === 'melancholy' ? '#778DA9' : item.emotion === 'solitude' ? '#415A77' : item.emotion === 'calm' ? '#81B29A' : item.emotion === 'hope' ? '#4EA8DE' : '#9D8DF1'}};
+          "
+          data-userid="{{item.id}}"
+          bindtap="onSendResonance"
+        >
+          <view class="point-dot"></view>
+        </view>
+
+        <!-- Frequency Labels -->
+        <view class="radar-labels">
+          <text class="freq-label top">{{userFrequency + 50}}</text>
+          <text class="freq-label right">{{userFrequency + 100}}</text>
+          <text class="freq-label bottom">{{userFrequency - 50}}</text>
+          <text class="freq-label left">{{userFrequency - 100}}</text>
+        </view>
+      </view>
+
+      <view class="resonance-info">
+        <text class="info-text">附近有 {{resonanceCount}} 位同频者</text>
+        <view class="broadcast-btn" bindtap="onBroadcastResonance">
+          <view class="broadcast-icon"></view>
+          <text>广播共振</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Nearby Users List -->
+    <view class="users-section">
+      <text class="section-label">同频者</text>
+
+      <view class="users-list">
+        <view
+          wx:for="{{nearbyUsers}}"
+          wx:key="id"
+          class="user-card glass"
+          data-userid="{{item.id}}"
+          bindtap="onSendResonance"
+        >
+          <view class="user-avatar">
+            <view class="avatar-bg" style="background: {{item.emotion === 'melancholy' ? 'linear-gradient(135deg, #778DA9, #415A77)' : item.emotion === 'calm' ? 'linear-gradient(135deg, #81B29A, #4EA8DE)' : 'linear-gradient(135deg, #9D8DF1, #778DA9)'}}">
+              <text class="avatar-text">{{item.nickname[0]}}</text>
+            </view>
+            <view class="online-indicator"></view>
+          </view>
+
+          <view class="user-info">
+            <text class="user-name">{{item.nickname}}</text>
+            <text class="user-freq">{{item.frequency}} Hz</text>
+          </view>
+
+          <view class="resonance-btn">
+            <view class="resonance-icon"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Meteor Call Button -->
+    <view class="meteor-section">
+      <button class="meteor-btn" bindtap="onMeteorCall">
+        <view class="meteor-icon">
+          <view class="meteor-trail"></view>
+          <view class="meteor-head"></view>
+        </view>
+        <text>发起流星通话</text>
+        <view class="level-badge">Lv.3</view>
+      </button>
+    </view>
+  </view>
+
+  <!-- Tab Bar -->
+  <tab-bar id="tab-bar" />
+</view>

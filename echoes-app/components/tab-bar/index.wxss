@@ -1,0 +1,118 @@
+/* components/tab-bar/index.wxss */
+
+.tab-bar-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100rpx;
+  background: rgba(13, 27, 42, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rpx;
+}
+
+.icon-wrapper {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.icon-inner {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 6rpx;
+  background: var(--color-text-secondary);
+  transition: all 0.3s ease;
+}
+
+/* Active states for each tab */
+.tab-item.active:nth-child(1) .icon-inner {
+  background: linear-gradient(135deg, #E07A5F, #F4845F);
+  box-shadow: 0 0 12rpx rgba(224, 122, 95, 0.5);
+}
+
+.tab-item.active:nth-child(2) .icon-inner {
+  background: linear-gradient(135deg, #9D8DF1, #4EA8DE);
+  box-shadow: 0 0 12rpx rgba(157, 141, 241, 0.5);
+}
+
+.tab-item.active:nth-child(3) .icon-inner {
+  background: linear-gradient(135deg, #4EA8DE, #81B29A);
+  box-shadow: 0 0 12rpx rgba(78, 168, 222, 0.5);
+}
+
+.tab-item.active:nth-child(4) .icon-inner {
+  background: linear-gradient(135deg, #FFD166, #E07A5F);
+  box-shadow: 0 0 12rpx rgba(255, 209, 102, 0.5);
+}
+
+.tab-text {
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  transition: all 0.3s ease;
+}
+
+.tab-item.active .tab-text {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+/* Icon shapes for each tab */
+.tab-item:nth-child(1) .icon-inner {
+  /* Home - house shape */
+  clip-path: polygon(20% 45%, 20% 30%, 50% 10%, 80% 30%, 80% 45%, 50% 65%);
+}
+
+.tab-item:nth-child(2) .icon-inner {
+  /* Channel - radio waves */
+  border-radius: 50%;
+  width: 24rpx;
+  height: 24rpx;
+  position: relative;
+}
+
+.tab-item:nth-child(3) .icon-inner {
+  /* Capsule - capsule shape */
+  border-radius: 12rpx;
+  transform: rotate(45deg);
+  width: 20rpx;
+  height: 28rpx;
+}
+
+.tab-item:nth-child(4) .icon-inner {
+  /* User - person shape */
+  border-radius: 50% 50% 40% 40%;
+  width: 22rpx;
+  height: 26rpx;
+}

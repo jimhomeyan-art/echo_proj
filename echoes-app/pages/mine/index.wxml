@@ -1,0 +1,124 @@
+<view class="page">
+  <!-- Background -->
+  <view class="background">
+    <view class="gradient-layer"></view>
+  </view>
+
+  <!-- Status Bar -->
+  <view class="status-bar"></view>
+
+  <!-- Header -->
+  <view class="header">
+    <view class="header-content">
+      <text class="page-title">我的</text>
+      <view class="share-btn" bindtap="onShareApp">
+        <view class="share-icon"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Content -->
+  <view class="content">
+    <!-- Profile Card -->
+    <view class="profile-card glass">
+      <view class="profile-main">
+        <view class="avatar-wrapper">
+          <view class="avatar-ring"></view>
+          <view class="avatar">
+            <text class="avatar-text">{{user?.nickname?.[0] || '游'}}</text>
+          </view>
+        </view>
+
+        <view class="profile-info">
+          <text class="nickname">{{user?.nickname || '夜行者'}}</text>
+          <view class="level-badge">
+            <text>Lv.{{user?.level || 1}}</text>
+          </view>
+        </view>
+
+        <view class="edit-btn" bindtap="onEditProfile">
+          <view class="edit-icon"></view>
+        </view>
+      </view>
+
+      <!-- Stats -->
+      <view class="stats-row">
+        <view class="stat-item">
+          <text class="stat-value">{{stats.emotionCount}}</text>
+          <text class="stat-label">倾诉</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.capsuleCount}}</text>
+          <text class="stat-label">胶囊</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.listeningMinutes}}</text>
+          <text class="stat-label">分钟</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.resonanceCount}}</text>
+          <text class="stat-label">共振</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Emotion Journey Preview -->
+    <view class="journey-section">
+      <text class="section-title">情绪历程</text>
+      <view class="journey-card glass" bindtap="showEmotionProfile">
+        <view class="journey-visual">
+          <view
+            wx:for="{{5}}"
+            wx:key="index"
+            class="journey-dot {{index < stats.emotionCount % 6 ? 'active' : ''}}"
+            style="--delay: {{index * 0.2}}s"
+          ></view>
+        </view>
+        <view class="journey-info">
+          <text class="journey-title">{{stats.emotionCount}} 次情绪记录</text>
+          <text class="journey-subtitle">点击查看详细档案</text>
+        </view>
+        <view class="journey-arrow"></view>
+      </view>
+    </view>
+
+    <!-- Menu List -->
+    <view class="menu-section">
+      <text class="section-title">功能</text>
+
+      <view class="menu-list">
+        <view
+          wx:for="{{menuItems}}"
+          wx:key="id"
+          class="menu-item glass"
+          data-id="{{item.id}}"
+          bindtap="onMenuTap"
+        >
+          <view class="menu-icon">
+            <view class="icon-{{item.icon}}"></view>
+          </view>
+          <view class="menu-content">
+            <text class="menu-title">{{item.title}}</text>
+            <text class="menu-subtitle">{{item.subtitle}}</text>
+          </view>
+          <view class="menu-arrow"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- App Info -->
+    <view class="app-info">
+      <view class="app-logo">
+        <view class="logo-icon-small"></view>
+      </view>
+      <text class="app-name">Echoes / 回响</text>
+      <text class="app-version">Version 1.0.0</text>
+    </view>
+  </view>
+
+  <!-- Tab Bar -->
+  <tab-bar id="tab-bar" />
+</view>

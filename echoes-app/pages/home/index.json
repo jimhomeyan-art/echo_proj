@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "tab-bar": "/components/tab-bar/index",
+    "music-player": "/components/music-player/index",
+    "emotion-display": "/components/emotion-display/index"
+  },
+  "navigationStyle": "custom"
+}
