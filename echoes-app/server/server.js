@@ -15,7 +15,18 @@ const PORT = process.env.PORT || 3001
 const MUSIC_PROVIDER = process.env.MUSIC_PROVIDER || 'mureka'
 
 // Middleware
-app.use(cors())
+const allowedOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',').map(s => s.trim()).filter(Boolean)
+app.use(cors({
+  origin: (origin, cb) => {
+    // 无 origin（同源/curl/Postman）或未配置白名单 → 全放行
+    if (!origin || allowedOrigins.length === 0) return cb(null, true)
+    if (allowedOrigins.includes(origin)) return cb(null, true)
+    // 允许任意 vercel.app 子域，便于预览部署
+    if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true)
+    cb(new Error(`CORS blocked: ${origin}`))
+  }
+}))
 app.use(express.json())
 
 // 请求日志

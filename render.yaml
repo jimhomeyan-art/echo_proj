@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: echoes-backend
+    runtime: node
+    plan: free
+    rootDir: echoes-app/server
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: MUSIC_PROVIDER
+        value: mureka
+      - key: MUREKA_API_BASE_URL
+        value: https://api.mureka.ai
+      - key: MUREKA_GENERATE_PATH
+        value: /v1/instrumental/generate
+      - key: MUREKA_STATUS_PATH
+        value: /v1/instrumental/query/:taskId
+      - key: MUREKA_MODEL
+        value: auto
+      - key: MUREKA_N
+        value: "1"
+      - key: MUREKA_STREAM
+        value: "true"
+      - key: MUSIC_DURATION
+        value: "60"
+      - key: MUSIC_REQUEST_TIMEOUT
+        value: "30000"
+      - key: MUSIC_STATUS_TIMEOUT
+        value: "10000"
+      - key: QWEN_API_BASE_URL
+        value: https://dashscope.aliyuncs.com/compatible-mode/v1
+      - key: QWEN_MODEL
+        value: qwen-plus
+      - key: CHAT_REQUEST_TIMEOUT
+        value: "60000"
+      # 下面两个 key 留空，在 Render 控制台手动填，避免泄露
+      - key: MUREKA_API_KEY
+        sync: false
+      - key: QWEN_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
