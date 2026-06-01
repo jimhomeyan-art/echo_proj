@@ -101,7 +101,7 @@ export const FullPlayer: React.FC = () => {
         </div>
 
         {/* 歌词区 */}
-        <div className="flex-1 overflow-y-auto px-6 mt-6 mb-32 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-6 mt-6 scrollbar-hide">
           {lyricsLines.length > 0 && lyricsLines.some(l => l.trim()) ? (
             <div className="space-y-2 pb-8 text-center">
               {lyricsLines.map((line, idx) => {
@@ -130,7 +130,7 @@ export const FullPlayer: React.FC = () => {
         </div>
 
         {/* 控件 */}
-        <div className="absolute left-0 right-0 bottom-0 px-6 pb-10 pt-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent">
+        <div className="flex-shrink-0 px-6 pb-10 pt-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent">
           {/* 进度条 */}
           <ProgressBar
             variant="full"
