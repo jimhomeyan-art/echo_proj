@@ -152,9 +152,9 @@ export const myLibrary = {
 
 // ---------- 初始胶囊（"我的"）和收到的胶囊 ----------
 export const initialSavedCapsules = [
-  { ...fromSeed('seed-rainy-thoughts', { id: 'cap-1' }), createdAt: '2024-01-15', plays: 2345 },
-  { ...fromSeed('seed-urban-drift', { id: 'cap-2' }), createdAt: '2024-01-12', plays: 1892 },
-  { ...fromSeed('seed-starry-walk', { id: 'cap-3' }), createdAt: '2024-01-10', plays: 3421 },
+  { ...fromSeed('seed-rainy-thoughts', { id: 'cap-1' }), createdAt: '2024-01-15', plays: 2345, moment: '那晚你一个人在雨里走' },
+  { ...fromSeed('seed-urban-drift', { id: 'cap-2' }), createdAt: '2024-01-12', plays: 1892, moment: '深夜堵车，窗外霓虹闪烁' },
+  { ...fromSeed('seed-starry-walk', { id: 'cap-3' }), createdAt: '2024-01-10', plays: 3421, moment: '那个大晴天你心情特别好' },
 ];
 
 export const receivedCapsules = [

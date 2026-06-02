@@ -5,12 +5,12 @@ import { EchoAvatar } from '../common/EchoAvatar'
 import { ProgressBar } from '../common/ProgressBar'
 
 /**
- * 全屏歌曲详情 - Tinder 风：黑底 + 大封面 + 干净控件
+ * 全屏歌曲详情 - Tinder 风：黑底 + 大封�?+ 干净控件
  */
 export const FullPlayer: React.FC = () => {
   const {
     isFullPlayerOpen, closeFullPlayer, nowPlaying, isPlaying, togglePlay, audioRef,
-    currentTime, duration, seek,
+    currentTime, duration, seek, isBuffering,
     isCapsuled, toggleCapsule,
   } = useChat()
 
@@ -49,7 +49,7 @@ export const FullPlayer: React.FC = () => {
           <div className="absolute inset-0 bg-ink-900/60" />
         </div>
       )}
-      {/* 绿色环境光，呼应品牌色 */}
+      {/* 绿色环境光，呼应品牌�?*/}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full"
           style={{ background: 'radial-gradient(circle, rgba(30,215,96,0.18) 0%, transparent 70%)' }} />
@@ -76,7 +76,7 @@ export const FullPlayer: React.FC = () => {
           </button>
         </header>
 
-        {/* 大封面 */}
+        {/* 大封�?*/}
         <div className="px-6 mt-2 flex-shrink-0">
           <div className="aspect-square w-full max-w-[280px] mx-auto rounded-card overflow-hidden shadow-pop relative bg-ink-700">
             {nowPlaying.cover ? (
@@ -111,6 +111,7 @@ export const FullPlayer: React.FC = () => {
                   cover: nowPlaying.cover,
                   url: nowPlaying.url,
                   mood: nowPlaying.mood,
+                  moment: nowPlaying.mood ? `一段「${nowPlaying.mood}」的心情` : undefined,
                   createdAt: new Date().toISOString().slice(0, 10),
                   plays: 0,
                   source: 'liked',
@@ -159,7 +160,7 @@ export const FullPlayer: React.FC = () => {
 
         {/* 控件区 */}
         <div className="flex-shrink-0 px-6 pb-10 pt-4">
-          {/* 进度条 */}
+        {/* 进度条 */}
           <ProgressBar
             variant="full"
             currentTime={currentTime}
@@ -178,12 +179,17 @@ export const FullPlayer: React.FC = () => {
               <SkipBack className="w-7 h-7" fill="currentColor" strokeWidth={0} />
             </button>
             <button
-              onClick={togglePlay}
+              onClick={() => { if (!isBuffering) togglePlay() }}
               disabled={!nowPlaying.url}
-              aria-label={isPlaying ? '暂停' : '播放'}
+              aria-label={isBuffering ? '缓冲中' : isPlaying ? '暂停' : '播放'}
               className="w-[72px] h-[72px] rounded-full bg-echo-green text-ink-900 flex items-center justify-center shadow-flame btn-press disabled:opacity-40 hover:scale-105 transition-transform"
             >
-              {isPlaying
+              {isBuffering ? (
+                <svg className="w-9 h-9 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                  <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+              ) : isPlaying
                 ? <Pause className="w-8 h-8" fill="currentColor" strokeWidth={0} />
                 : <Play className="w-8 h-8 ml-1" fill="currentColor" strokeWidth={0} />}
             </button>

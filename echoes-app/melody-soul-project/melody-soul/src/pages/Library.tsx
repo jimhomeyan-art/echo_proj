@@ -29,7 +29,7 @@ export const LibraryPage: React.FC = () => {
       <header className="sticky top-0 z-30 glass-effect border-b border-white/5">
         <div className="max-w-md mx-auto px-5 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-display font-bold">音乐库</h1>
+            <h1 className="text-2xl font-display font-bold">音乐�?/h1>
             <button className="p-2 rounded-xl bg-surface text-text-secondary hover:text-text-primary transition-colors btn-press">
               <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -109,10 +109,10 @@ export const LibraryPage: React.FC = () => {
                   <div className="flex items-center gap-2 mt-1 text-xs text-text-secondary">
                     <span>{song.duration}</span>
                     <span>·</span>
-                    <span>{song.plays} 次播放</span>
+                    <span>{song.plays} 次播�?/span>
                   </div>
                   <p className="text-xs text-text-secondary mt-1">
-                    创建于 {song.createdAt}
+                    创建�?{song.createdAt}
                   </p>
                 </div>
                 <button className="p-2 text-text-secondary hover:text-text-primary transition-colors">
@@ -127,7 +127,7 @@ export const LibraryPage: React.FC = () => {
         {activeTab === 'liked' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-text-secondary">共 {myLibrary.liked.length} 首收藏</span>
+              <span className="text-sm text-text-secondary">�?{myLibrary.liked.length} 首收�?/span>
             </div>
             {myLibrary.liked.map((song, index) => (
               <div
@@ -167,7 +167,7 @@ export const LibraryPage: React.FC = () => {
               <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center">
                 <Plus className="w-6 h-6 text-accent" />
               </div>
-              <span className="text-sm font-medium">创建新歌单</span>
+              <span className="text-sm font-medium">创建新歌�?/span>
             </button>
 
             {myLibrary.playlists.map((playlist, index) => (
@@ -195,7 +195,7 @@ export const LibraryPage: React.FC = () => {
         <section className="mt-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-text-secondary" />
-            <h2 className="text-lg font-display font-bold">最近播放</h2>
+            <h2 className="text-lg font-display font-bold">最近播�?/h2>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
             {[1, 2, 3, 4, 5].map((i) => (

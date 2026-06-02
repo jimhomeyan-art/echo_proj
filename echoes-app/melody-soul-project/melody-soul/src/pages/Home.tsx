@@ -109,7 +109,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
         {/* Feed */}
         <section className="space-y-4">
-          <h2 className="text-lg font-display font-bold text-text-primary">最新动态</h2>
+          <h2 className="text-lg font-display font-bold text-text-primary">最新动�?/h2>
           {feedPosts.map((post, index) => (
             <div
               key={post.id}
@@ -131,7 +131,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         <section className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-display font-bold text-text-primary">推荐关注</h2>
-            <button className="text-sm text-primary font-medium">换一批</button>
+            <button className="text-sm text-primary font-medium">换一�?/button>
           </div>
           <div className="space-y-3">
             {recommendedUsers.map((user, index) => (

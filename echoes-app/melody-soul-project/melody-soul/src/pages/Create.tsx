@@ -271,6 +271,14 @@ export const CreatePage: React.FC = () => {
       // 把生成完成的音乐推到全局 MiniPlayer
       // 行为规则：如果当前有别的音乐正在播放，则不打断，只静默写入卡片；用户主动点才播
       if (result.musicUrl) {
+        // 预热：立即在 <head> 插一条 preload link，让浏览器提前下载 mp3
+        try {
+          const preload = document.createElement('link')
+          preload.rel = 'preload'
+          preload.as = 'audio'
+          preload.href = result.musicUrl
+          document.head.appendChild(preload)
+        } catch {}
         const trackPayload = {
           id: musicMsgId,
           title: finalTitle,
@@ -376,9 +384,9 @@ export const CreatePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white">
+      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
         <div className="max-w-md mx-auto px-5 pt-5 pb-4 flex items-center justify-between">
           <div>
             <h1 className="text-[28px] font-display font-bold text-ink-900 leading-none tracking-tight">
@@ -441,18 +449,23 @@ export const CreatePage: React.FC = () => {
               style={{ animationDelay: `${Math.min(index, 5) * 60}ms` }}
             >
               {/* Avatar */}
-              {message.role === 'assistant' ? (
-                <EchoAvatar size={36} />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-ink-500 text-[12px] font-semibold">
-                    {currentUser.name?.slice(0, 1) || 'U'}
-                  </span>
-                </div>
-              )}
+              <div className="flex-shrink-0">
+                {message.role === 'assistant' ? (
+                  <EchoAvatar size={36} />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center">
+                    <span className="text-ink-500 text-[12px] font-semibold">
+                      {currentUser.name?.slice(0, 1) || 'U'}
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* Content */}
-              <div className={`flex-1 max-w-[78%] ${message.role === 'user' ? 'items-end' : ''}`}>
+              <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'} flex-1 max-w-[78%]`}>
+                {message.role === 'assistant' && (
+                  <p className="text-[11px] font-semibold text-ink-500 mb-1 ml-0.5">Echo</p>
+                )}
                 {message.type === 'music' && message.music ? (
                   <div className="rounded-card overflow-hidden bg-white border border-ink-100">
                     {/* 大封面 */}
@@ -559,6 +572,11 @@ export const CreatePage: React.FC = () => {
                             {/* 心 */}
                             <button
                               onClick={() => {
+                                // 取最近一条用户消息作为情境短句
+                                const lastUserMsg = [...messages].reverse().find(msg => msg.role === 'user' && msg.type === 'text')
+                                const moment = lastUserMsg?.content
+                                  ? lastUserMsg.content.slice(0, 24) + (lastUserMsg.content.length > 24 ? '…' : '')
+                                  : undefined
                                 toggleCapsule({
                                   id: m.id,
                                   title: m.title,
@@ -566,6 +584,7 @@ export const CreatePage: React.FC = () => {
                                   duration: m.duration,
                                   url: m.url,
                                   mood: m.mood,
+                                  moment,
                                   styleTag: m.style,
                                   createdAt: new Date().toISOString().slice(0, 10),
                                   plays: 0,
@@ -643,7 +662,8 @@ export const CreatePage: React.FC = () => {
           {isTyping && (
             <div className="flex gap-3 animate-slide-up">
               <EchoAvatar size={36} />
-              <div className="flex-1 max-w-[78%]">
+              <div className="flex flex-col items-start flex-1 max-w-[78%]">
+                <p className="text-[11px] font-semibold text-ink-500 mb-1 ml-0.5">Echo</p>
                 <div className="bg-ink-50 rounded-2xl rounded-tl-md px-4 py-3 inline-flex items-center gap-1.5">
                   {[1, 2, 3].map(i => (
                     <span
@@ -662,7 +682,7 @@ export const CreatePage: React.FC = () => {
       </main>
 
       {/* Input Area: 在 BottomNav(64px) 上方，MiniPlayer 显示时再往上推 72px */}
-      <div className="fixed left-0 right-0 bg-white border-t border-ink-100 z-20 transition-[bottom] duration-300"
+      <div className="fixed left-0 right-0 bg-white/70 backdrop-blur-xl border-t border-white/60 z-20 transition-[bottom] duration-300"
         style={{ bottom: nowPlaying ? 'calc(64px + 72px)' : '64px' }}>
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center gap-2">

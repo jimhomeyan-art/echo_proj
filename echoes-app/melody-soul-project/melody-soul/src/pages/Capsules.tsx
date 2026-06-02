@@ -35,9 +35,9 @@ export const CapsulesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 bg-white">
+    <div className="min-h-screen pb-20">
       {/* Header — 大标题，无紫色 */}
-      <header className="sticky top-0 z-30 bg-white">
+      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
         <div className="max-w-md mx-auto px-5 pt-5 pb-3 flex items-center justify-between">
           <div>
             <h1 className="text-[28px] font-display font-bold text-ink-900 leading-none tracking-tight">
@@ -144,12 +144,13 @@ export const CapsulesPage: React.FC = () => {
                             <h3 className="font-display font-bold text-2xl text-white tracking-tight leading-tight truncate">
                               {capsule.title}
                             </h3>
+                            {/* 情境短句：优先用 moment，没有则降级为 mood 描述 */}
+                            {(capsule.moment || capsule.mood) && (
+                              <p className="text-[13px] text-white/80 mt-1.5 leading-snug line-clamp-2">
+                                {capsule.moment || `创作于「${capsule.mood}」的那天`}
+                              </p>
+                            )}
                             <div className="flex items-center gap-1.5 flex-wrap mt-2">
-                              {capsule.mood && (
-                                <span className="chip-dark">
-                                  创作于「{capsule.mood}」
-                                </span>
-                              )}
                               {capsule.styleTag && (
                                 <span className="chip-dark">{capsule.styleTag}</span>
                               )}
@@ -276,7 +277,7 @@ export const CapsulesPage: React.FC = () => {
                       <p className="text-[12px] text-ink-500 mt-0.5">{capsule.music.duration}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {capsule.music.mood && (
-                          <span className="chip">创作于「{capsule.music.mood}」</span>
+                          <span className="chip">{capsule.music.mood}的心情</span>
                         )}
                       </div>
                     </div>

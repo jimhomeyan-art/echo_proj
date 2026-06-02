@@ -105,9 +105,9 @@ export const ChannelPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen pb-20 bg-white">
+    <div className="min-h-screen pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white">
+      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
         <div className="max-w-md mx-auto px-5 pt-5 pb-2">
           <div className="flex items-center justify-between">
             <div>

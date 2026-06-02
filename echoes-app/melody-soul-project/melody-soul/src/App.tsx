@@ -26,11 +26,11 @@ function AppContent() {
   const pageBottomPadding = nowPlaying ? 152 : 80;
 
   return (
-    <div className="min-h-screen bg-bg-primary max-w-md mx-auto relative">
+    <div className="min-h-screen bg-[#F2F3F5] max-w-md mx-auto relative">
       {/* Background Gradient Decoration */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-echo-green/8 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-echo-green/5 rounded-full blur-3xl" />
       </div>
 
       {/* All pages stay mounted; only the active one is visible. */}

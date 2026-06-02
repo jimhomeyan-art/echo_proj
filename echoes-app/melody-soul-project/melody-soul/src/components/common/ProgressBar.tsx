@@ -27,15 +27,22 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   const [dragging, setDragging] = useState(false)
   const [previewTime, setPreviewTime] = useState<number | null>(null)
 
-  const safeDur = isFinite(duration) && duration > 0 ? duration : 0
+  // duration 为 Infinity（流式 mp3）时，用 currentTime+30 作为显示长度
+  const safeDur = isFinite(duration) && duration > 0
+    ? duration
+    : (currentTime > 0 ? currentTime + 30 : 0)
+  const isStreaming = !isFinite(duration) || duration <= 0
   const displayTime = previewTime !== null ? previewTime : currentTime
   const pct = safeDur > 0 ? Math.min(100, (displayTime / safeDur) * 100) : 0
 
   function pickTimeFromEvent(clientX: number): number | null {
     const rect = trackRef.current?.getBoundingClientRect()
-    if (!rect || !safeDur) return null
+    if (!rect) return null
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width))
-    return (x / rect.width) * safeDur
+    // 流式 duration 未知时，按轨道比例映射到已缓冲范围
+    const effectiveDur = safeDur > 0 ? safeDur : currentTime > 0 ? currentTime * 2 : null
+    if (!effectiveDur) return null
+    return (x / rect.width) * effectiveDur
   }
 
   useEffect(() => {
@@ -59,12 +66,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   }, [dragging, safeDur, onSeek])
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (!safeDur) return
     setDragging(true)
     const t = pickTimeFromEvent(e.clientX)
-    if (t !== null) {
-      setPreviewTime(t)
-    }
+    if (t !== null) setPreviewTime(t)
   }
 
   if (variant === 'mini') {
@@ -73,7 +77,6 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         ref={trackRef}
         onPointerDown={(e) => {
           e.stopPropagation()
-          if (!safeDur) return
           const t = pickTimeFromEvent(e.clientX)
           if (t !== null) onSeek(t)
         }}
@@ -108,7 +111,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       </div>
       <div className="flex justify-between mt-2 text-[11px] text-white/70 tabular-nums">
         <span>{fmt(displayTime)}</span>
-        <span>{fmt(safeDur)}</span>
+        <span>{isStreaming ? '∞' : fmt(safeDur)}</span>
       </div>
     </div>
   )

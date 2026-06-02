@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check, Sparkles, PenLine } from 'lucide-react'
+import { Check, PenLine } from 'lucide-react'
 import type { NamingPrompt } from '../../context/ChatContext'
 
 interface NamingCardProps {
@@ -17,43 +17,51 @@ export const NamingCard: React.FC<NamingCardProps> = ({ messageId, naming, onCho
 
   if (isDone) {
     return (
-      <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-soft text-sm text-text-secondary">
+      <div className="bg-ink-50 rounded-2xl rounded-tl-md px-4 py-3 text-[14px] text-ink-500">
         准备开始创作。
       </div>
     )
   }
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/15 rounded-2xl rounded-tl-sm p-4 max-w-full">
+    <div className="bg-white/80 backdrop-blur-md border border-ink-100 rounded-2xl rounded-tl-md p-4 max-w-full">
       {!awaitingInput ? (
         <>
-          <p className="text-sm text-text-primary leading-relaxed">
-            {hasAiTitle
-              ? <>就叫 <span className="text-primary font-bold">《{naming.aiTitle}》</span> 怎么样？</>
-              : '这首歌想叫什么名字？'}
-          </p>
+          {/* 歌名展示 */}
+          <div className="text-center mb-4">
+            {hasAiTitle ? (
+              <>
+                <p className="text-[12px] text-ink-500 mb-1">Echo 建议的名字</p>
+                <p className="text-[22px] font-display font-bold text-ink-900 leading-tight">
+                  《{naming.aiTitle}》
+                </p>
+              </>
+            ) : (
+              <p className="text-[15px] text-ink-900 font-medium">这首歌想叫什么名字？</p>
+            )}
+          </div>
 
-          <div className="mt-3 flex flex-col gap-2">
-            <button
-              onClick={() => onChoose(messageId, 'ai')}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold shadow-primary btn-press"
-            >
-              <Check className="w-4 h-4" />
-              {hasAiTitle ? `用《${naming.aiTitle}》` : '让 AI 起名'}
-            </button>
-
+          {/* 两个干净按钮 */}
+          <div className="flex gap-2">
             <button
               onClick={() => onChoose(messageId, 'self')}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 hover:border-secondary/40 text-sm font-medium text-text-primary btn-press"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-pill border border-ink-100 bg-white text-[13px] font-medium text-ink-500 hover:border-ink-300 hover:text-ink-900 transition-colors btn-press"
             >
-              <PenLine className="w-4 h-4 text-secondary" />
-              我想换个名字
+              <PenLine className="w-3.5 h-3.5" />
+              换个名字
+            </button>
+            <button
+              onClick={() => onChoose(messageId, 'ai')}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-pill bg-echo-green text-ink-900 text-[13px] font-semibold shadow-flame btn-press hover:opacity-90 transition-opacity"
+            >
+              <Check className="w-3.5 h-3.5" />
+              {hasAiTitle ? '就用这个' : '让 Echo 起名'}
             </button>
           </div>
         </>
       ) : (
         <>
-          <p className="text-sm text-text-primary mb-3">起一个名字吧：</p>
+          <p className="text-[13px] text-ink-500 mb-2.5">起一个名字吧：</p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -65,12 +73,12 @@ export const NamingCard: React.FC<NamingCardProps> = ({ messageId, naming, onCho
               placeholder={naming.aiTitle || '比如：雨夜霓虹'}
               maxLength={20}
               autoFocus
-              className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              className="flex-1 bg-ink-50 rounded-pill px-4 py-2.5 text-[14px] text-ink-900 outline-none focus:ring-1 focus:ring-ink-900 transition-all placeholder:text-ink-300"
             />
             <button
               onClick={() => onSubmit(messageId, title)}
               disabled={!title.trim()}
-              className="px-4 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold shadow-primary disabled:opacity-40 btn-press"
+              className="px-4 py-2.5 rounded-pill bg-echo-green text-ink-900 text-[13px] font-semibold shadow-flame disabled:opacity-40 btn-press"
             >
               确定
             </button>

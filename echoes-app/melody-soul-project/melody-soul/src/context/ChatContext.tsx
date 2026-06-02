@@ -54,6 +54,7 @@ export interface CapsuleEntry {
   duration?: string
   url?: string
   mood?: string        // 创作时的情绪 / 收藏时的情绪
+  moment?: string      // 情境短句，如「那天你心情不太好」
   styleTag?: string
   createdAt: string    // 入胶囊时间
   plays: number
@@ -85,6 +86,7 @@ interface ChatContextValue {
   // 进度
   currentTime: number  // 秒
   duration: number     // 秒，未加载时为 0
+  isBuffering: boolean // 是否正在缓冲
   seek: (sec: number) => void
   // 胶囊
   capsules: CapsuleEntry[]
@@ -106,24 +108,35 @@ const ChatContext = createContext<ChatContextValue | null>(null)
 
 const STORAGE_KEY_CAPSULES = 'echoes.capsules.v1'
 
+const CAPSULES_VERSION = 'v2' // ← 改这里触发自动重置
+
 function loadCapsules(): CapsuleEntry[] {
   try {
+    const version = localStorage.getItem(STORAGE_KEY_CAPSULES + '_ver')
     const raw = localStorage.getItem(STORAGE_KEY_CAPSULES)
-    if (raw) return JSON.parse(raw)
+    if (raw && version === CAPSULES_VERSION) return JSON.parse(raw)
+    // 版本不匹配：清旧数据，用最新 mock 重新初始化
+    localStorage.removeItem(STORAGE_KEY_CAPSULES)
   } catch {}
-  // 第一次：把 mock 里 initialSavedCapsules 灌进来
-  return initialSavedCapsules.map(c => ({
+  // 第一次 / 版本升级：把 mock 里 initialSavedCapsules 灌进来
+  const fresh = initialSavedCapsules.map(c => ({
     id: c.id,
     title: c.title,
     cover: c.cover,
     duration: c.duration,
     url: c.url,
     mood: c.mood,
+    moment: (c as any).moment as string | undefined,
     styleTag: c.styleTag,
     createdAt: c.createdAt,
     plays: c.plays,
     source: 'created' as const,
   }))
+  try {
+    localStorage.setItem(STORAGE_KEY_CAPSULES, JSON.stringify(fresh))
+    localStorage.setItem(STORAGE_KEY_CAPSULES + '_ver', CAPSULES_VERSION)
+  } catch {}
+  return fresh
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
@@ -136,6 +149,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [capsules, setCapsules] = useState<CapsuleEntry[]>(() => loadCapsules())
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [isBuffering, setIsBuffering] = useState(false)
   const collectedTextRef = useRef<string>('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -271,6 +285,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       closeFullPlayer,
       currentTime,
       duration,
+      isBuffering,
       seek,
       capsules,
       addCapsule,
@@ -284,22 +299,28 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         ref={audioRef}
         src={nowPlaying?.url || ''}
         preload="auto"
-        onEnded={() => setIsPlayingState(false)}
-        onPlay={() => setIsPlayingState(true)}
+        onEnded={() => { setIsPlayingState(false); setIsBuffering(false) }}
+        onPlay={() => { setIsPlayingState(true); setIsBuffering(false) }}
         onPause={() => setIsPlayingState(false)}
+        onWaiting={() => setIsBuffering(true)}
+        onPlaying={() => setIsBuffering(false)}
+        onCanPlay={() => setIsBuffering(false)}
+        onStalled={() => setIsBuffering(true)}
         onTimeUpdate={e => setCurrentTime((e.target as HTMLAudioElement).currentTime || 0)}
         onLoadedMetadata={e => {
           const d = (e.target as HTMLAudioElement).duration
-          setDuration(isFinite(d) ? d : 0)
+          setDuration(d >= 0 ? d : 0)
           setCurrentTime((e.target as HTMLAudioElement).currentTime || 0)
+          setIsBuffering(false)
         }}
         onDurationChange={e => {
           const d = (e.target as HTMLAudioElement).duration
-          setDuration(isFinite(d) ? d : 0)
+          setDuration(d >= 0 ? d : 0)
         }}
         onError={() => {
           console.warn('Audio source failed to load (可能流式 URL 已过期，或 seed 文件还没生成)')
           setIsPlayingState(false)
+          setIsBuffering(false)
         }}
         style={{ display: 'none' }}
       />

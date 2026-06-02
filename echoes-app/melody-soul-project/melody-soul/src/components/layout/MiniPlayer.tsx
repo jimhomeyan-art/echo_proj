@@ -11,7 +11,7 @@ interface MiniPlayerProps {
 export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
   const {
     nowPlaying, isPlaying, togglePlay, openFullPlayer,
-    currentTime, duration, seek,
+    currentTime, duration, seek, isBuffering,
   } = useChat()
 
   if (!nowPlaying) return null
@@ -20,7 +20,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
   const handleExpand = onExpand || openFullPlayer
 
   return (
-    <div className="fixed bottom-[64px] left-0 right-0 z-40 bg-white border-t border-ink-100">
+    <div className="fixed bottom-[64px] left-0 right-0 z-40 bg-white/70 backdrop-blur-xl border-t border-white/60">
       <div className="max-w-md mx-auto">
         <ProgressBar
           variant="mini"
@@ -66,14 +66,19 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
           </p>
         </div>
 
-        {/* 主操作：仅一个圆形 play/pause */}
+        {/* 主操作：仅一个圆形 play/pause / buffering */}
         <button
-          onClick={e => { e.stopPropagation(); togglePlay() }}
+          onClick={e => { e.stopPropagation(); if (!isBuffering) togglePlay() }}
           disabled={!hasUrl}
-          aria-label={isPlaying ? '暂停' : '播放'}
-          className="w-11 h-11 rounded-full bg-echo-green text-ink-900 flex items-center justify-center btn-press disabled:opacity-40"
+          aria-label={isBuffering ? '缓冲中' : isPlaying ? '暂停' : '播放'}
+          className="w-11 h-11 rounded-full bg-echo-green text-ink-900 flex items-center justify-center btn-press disabled:opacity-40 relative overflow-hidden"
         >
-          {isPlaying
+          {isBuffering ? (
+            <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+              <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            </svg>
+          ) : isPlaying
             ? <Pause className="w-4.5 h-4.5" fill="currentColor" strokeWidth={0} />
             : <Play className="w-4.5 h-4.5 ml-0.5" fill="currentColor" strokeWidth={0} />}
         </button>

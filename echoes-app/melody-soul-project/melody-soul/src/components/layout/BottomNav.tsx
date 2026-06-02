@@ -16,7 +16,7 @@ const navItems = [
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-ink-100">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-t border-white/60">
       <div
         className="flex items-center justify-around max-w-md mx-auto h-[64px] px-2"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)' }}

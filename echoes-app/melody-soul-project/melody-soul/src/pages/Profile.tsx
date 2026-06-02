@@ -9,9 +9,9 @@ export const ProfilePage: React.FC = () => {
   const works = myLibrary.created.concat(myLibrary.liked.slice(0, 4) as any).slice(0, 9);
 
   return (
-    <div className="min-h-screen pb-20 bg-white">
+    <div className="min-h-screen pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white">
+      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
         <div className="max-w-md mx-auto px-5 pt-5 pb-3 flex items-center justify-between">
           <h1 className="text-[28px] font-display font-bold text-ink-900 leading-none tracking-tight">
             个人中心

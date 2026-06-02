@@ -16,11 +16,11 @@ export const FriendsPage: React.FC = () => {
   const friend = friends.find(f => f.id === selectedFriend);
 
   return (
-    <div className="min-h-screen pb-20 bg-white">
+    <div className="min-h-screen pb-20">
       {!selectedFriend ? (
         <>
           {/* Header */}
-          <header className="sticky top-0 z-30 bg-white">
+          <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
             <div className="max-w-md mx-auto px-5 pt-5 pb-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -131,7 +131,7 @@ export const FriendsPage: React.FC = () => {
       ) : (
         <>
           {/* Chat Header */}
-          <header className="sticky top-0 z-30 bg-white border-b border-ink-100">
+          <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-white/60">
             <div className="max-w-md mx-auto px-3 py-2 flex items-center gap-2">
               <button
                 onClick={() => setSelectedFriend(null)}
@@ -261,7 +261,7 @@ export const FriendsPage: React.FC = () => {
 
           {/* Input */}
           <div
-            className="fixed left-0 right-0 z-40 bg-white border-t border-ink-100 transition-[bottom] duration-300"
+            className="fixed left-0 right-0 z-40 bg-white/70 backdrop-blur-xl border-t border-white/60 transition-[bottom] duration-300"
             style={{ bottom: nowPlaying ? 'calc(64px + 72px)' : '64px' }}
           >
             <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-2">

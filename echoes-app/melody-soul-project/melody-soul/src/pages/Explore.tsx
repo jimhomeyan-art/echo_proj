@@ -142,7 +142,7 @@ export const ExplorePage: React.FC = () => {
         {/* Recommended Users */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-display font-bold">热门创作者</h2>
+            <h2 className="text-lg font-display font-bold">热门创作�?/h2>
             <button className="text-sm text-accent font-medium">查看全部</button>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2 -mx-5 px-5">
