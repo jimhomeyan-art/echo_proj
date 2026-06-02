@@ -20,13 +20,20 @@ module.exports = {
           light: '#F472B6',
           dark: '#DB2777',
         },
-        // Tinder-style 强对比配色
+        // Echo brand 配色：Spotify 绿系
+        echo: {
+          green: '#1ED760',     // 主强调（CTA / 心 / 主操作）
+          deep:  '#1DB954',     // 主色加深（press / hover）
+          mint:  '#9BF285',     // 强调亮（成功 / 喜欢）
+          ember: '#FBA94C',     // 暖色辅助（提醒）
+        },
+        // 旧 tinder 配色保留向后兼容（指向新 echo 配色）
         tinder: {
-          flame: '#FE3C72',   // 主操作色（爱心 / CTA）
-          lime:  '#A6FF59',   // 强调（喜欢）
-          super: '#42CCC7',   // 二级强调（超喜欢）
-          boost: '#9747FF',   // boost / 紫
-          spark: '#FBA94C',   // 提醒
+          flame: '#1ED760',
+          lime:  '#9BF285',
+          super: '#42CCC7',
+          boost: '#9747FF',
+          spark: '#FBA94C',
         },
         ink: {
           900: '#0B0B0F',     // 近黑
@@ -37,13 +44,13 @@ module.exports = {
           100: '#E6E7EB',
           50:  '#F4F4F7',
         },
-        accent: '#FE3C72',
-        success: '#10B981',
+        accent: '#1ED760',
+        success: '#1ED760',
         warning: '#FBA94C',
         bg: {
           primary: '#FFFFFF',
           secondary: '#F4F4F7',
-          tertiary: '#EEF2FF',
+          tertiary: '#F0FAF0',
         },
         surface: '#FFFFFF',
         'card-bg': '#FFFFFF',
@@ -64,7 +71,7 @@ module.exports = {
         'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1)',
         'card': '0 12px 32px -12px rgba(11, 11, 15, 0.18)',
         'pop': '0 8px 24px -4px rgba(11, 11, 15, 0.22)',
-        'flame': '0 8px 22px -4px rgba(254, 60, 114, 0.45)',
+        'flame': '0 8px 22px -4px rgba(30, 215, 96, 0.45)',
         'primary': '0 4px 14px 0 rgba(99, 102, 241, 0.35)',
         'pink': '0 4px 14px 0 rgba(236, 72, 153, 0.35)',
       },

@@ -201,7 +201,7 @@ export const ChannelPage: React.FC = () => {
                               {post.user.username}
                             </p>
                           </div>
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-pop flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-echo-green flex items-center justify-center shadow-flame flex-shrink-0">
                             <Play
                               className="w-3.5 h-3.5 ml-0.5 text-ink-900"
                               fill="currentColor"

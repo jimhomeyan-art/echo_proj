@@ -70,8 +70,8 @@ export const FeedCard: React.FC<FeedCardProps> = ({
       )}
 
       {/* 大照片卡 */}
-      <div className="relative rounded-card overflow-hidden bg-ink-900 shadow-card">
-        <div className="relative aspect-[4/5] w-full">
+      <div className="relative rounded-card overflow-hidden bg-white border border-ink-100">
+        <div className="relative aspect-[4/5] w-full bg-ink-100">
           <img
             src={post.music.cover}
             alt={post.music.title}
@@ -100,7 +100,7 @@ export const FeedCard: React.FC<FeedCardProps> = ({
               <button
                 onClick={onPlay}
                 aria-label={isCurrentlyPlaying ? '暂停' : '播放'}
-                className="w-14 h-14 rounded-full bg-white text-ink-900 flex items-center justify-center shadow-pop btn-press flex-shrink-0"
+                className="w-14 h-14 rounded-full bg-echo-green text-ink-900 flex items-center justify-center shadow-flame btn-press flex-shrink-0"
               >
                 {isCurrentlyPlaying
                   ? <Pause className="w-5 h-5" fill="currentColor" strokeWidth={0} />

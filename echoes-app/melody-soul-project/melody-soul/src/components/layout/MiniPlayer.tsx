@@ -71,11 +71,11 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onExpand }) => {
           onClick={e => { e.stopPropagation(); togglePlay() }}
           disabled={!hasUrl}
           aria-label={isPlaying ? '暂停' : '播放'}
-          className="w-11 h-11 rounded-full bg-ink-900 text-white flex items-center justify-center btn-press disabled:opacity-40"
+          className="w-11 h-11 rounded-full bg-echo-green text-ink-900 flex items-center justify-center btn-press disabled:opacity-40"
         >
           {isPlaying
-            ? <Pause className="w-4.5 h-4.5" fill="white" strokeWidth={0} />
-            : <Play className="w-4.5 h-4.5 ml-0.5" fill="white" strokeWidth={0} />}
+            ? <Pause className="w-4.5 h-4.5" fill="currentColor" strokeWidth={0} />
+            : <Play className="w-4.5 h-4.5 ml-0.5" fill="currentColor" strokeWidth={0} />}
         </button>
         <button
           onClick={e => { e.stopPropagation(); handleExpand() }}

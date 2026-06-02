@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
-          // 中间创作按钮：纯黑大圆 + 白色音符
+          // 中间创作按钮：Spotify 绿大圆 + 白色音符
           if (item.isCenter) {
             return (
               <button
@@ -38,12 +38,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
                 <div
                   className={`
                     w-14 h-14 rounded-full flex items-center justify-center
-                    bg-ink-900 text-white shadow-pop
+                    bg-echo-green text-white shadow-flame
                     transition-transform duration-300
-                    ${isActive ? 'scale-105 ring-2 ring-ink-900/10 ring-offset-2 ring-offset-white' : 'hover:scale-105'}
+                    ${isActive ? 'scale-105 ring-2 ring-echo-green/30 ring-offset-2 ring-offset-white' : 'hover:scale-105'}
                   `}
                 >
-                  <Icon className="w-6 h-6" strokeWidth={2.2} />
+                  <Icon className="w-6 h-6 text-white" strokeWidth={2.4} fill="none" />
                 </div>
               </button>
             );

@@ -36,19 +36,19 @@
 
 @layer components {
   .gradient-primary {
-    background: linear-gradient(135deg, #FE3C72 0%, #FF7A59 100%);
+    background: linear-gradient(135deg, #1ED760 0%, #9BF285 100%);
   }
 
   .gradient-secondary {
-    background: linear-gradient(135deg, #FE3C72 0%, #9747FF 100%);
+    background: linear-gradient(135deg, #1ED760 0%, #42CCC7 100%);
   }
 
   .gradient-accent {
-    background: linear-gradient(135deg, #FBA94C 0%, #FE3C72 100%);
+    background: linear-gradient(135deg, #FBA94C 0%, #1ED760 100%);
   }
 
   .text-gradient-primary {
-    background: linear-gradient(135deg, #FE3C72 0%, #FF7A59 100%);
+    background: linear-gradient(135deg, #1ED760 0%, #1DB954 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -68,7 +68,7 @@
   }
 
   .glow-primary {
-    box-shadow: 0 0 30px rgba(254, 60, 114, 0.4);
+    box-shadow: 0 0 30px rgba(30, 215, 96, 0.4);
   }
 
   .card-hover {

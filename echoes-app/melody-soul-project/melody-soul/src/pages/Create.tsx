@@ -454,9 +454,9 @@ export const CreatePage: React.FC = () => {
               {/* Content */}
               <div className={`flex-1 max-w-[78%] ${message.role === 'user' ? 'items-end' : ''}`}>
                 {message.type === 'music' && message.music ? (
-                  <div className="rounded-card overflow-hidden bg-ink-900 shadow-card">
+                  <div className="rounded-card overflow-hidden bg-white border border-ink-100">
                     {/* 大封面 */}
-                    <div className="relative aspect-[4/5] bg-ink-700">
+                    <div className="relative aspect-[4/5] bg-ink-100">
                       <img
                         src={message.music.cover || defaultMusicCover}
                         alt={message.music.title}
@@ -530,11 +530,11 @@ export const CreatePage: React.FC = () => {
                                 }
                               }}
                               aria-label={showPause ? '暂停' : '播放'}
-                              className="w-11 h-11 rounded-full bg-ink-900 text-white flex items-center justify-center btn-press flex-shrink-0"
+                              className="w-11 h-11 rounded-full bg-echo-green text-ink-900 flex items-center justify-center btn-press flex-shrink-0"
                             >
                               {showPause
-                                ? <Pause className="w-4 h-4" fill="white" strokeWidth={0} />
-                                : <Play className="w-4 h-4 ml-0.5" fill="white" strokeWidth={0} />}
+                                ? <Pause className="w-4 h-4" fill="currentColor" strokeWidth={0} />
+                                : <Play className="w-4 h-4 ml-0.5" fill="currentColor" strokeWidth={0} />}
                             </button>
                             {/* 详情 */}
                             <button
@@ -608,7 +608,7 @@ export const CreatePage: React.FC = () => {
                   />
                 ) : (
                   <div className={`rounded-2xl px-4 py-2.5 ${message.role === 'user'
-                    ? 'bg-ink-900 text-white rounded-tr-md'
+                    ? 'bg-echo-green text-white rounded-tr-md'
                     : 'bg-ink-50 text-ink-900 rounded-tl-md'
                   }`}>
                     <p className={`text-[14.5px] leading-relaxed whitespace-pre-line ${message.role === 'user' ? 'text-white' : 'text-ink-900'}`}>

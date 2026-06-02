@@ -191,7 +191,7 @@ export const FriendsPage: React.FC = () => {
                       {msg.type === 'text' ? (
                         <div className={`px-3.5 py-2 rounded-2xl ${
                           isMe
-                            ? 'bg-ink-900 text-white rounded-br-md'
+                            ? 'bg-echo-green text-white rounded-br-md'
                             : 'bg-ink-50 text-ink-900 rounded-bl-md'
                         }`}>
                           <p className="text-[14px] leading-relaxed">{msg.content}</p>
@@ -239,12 +239,12 @@ export const FriendsPage: React.FC = () => {
                                   });
                                 }
                               }}
-                              className="w-10 h-10 rounded-full bg-ink-900 flex items-center justify-center btn-press flex-shrink-0"
+                              className="w-10 h-10 rounded-full bg-echo-green flex items-center justify-center btn-press flex-shrink-0"
                               aria-label="播放"
                             >
                               {nowPlaying?.id === msg.music?.id && isPlaying
-                                ? <Pause className="w-3.5 h-3.5 text-white" fill="white" strokeWidth={0} />
-                                : <Play className="w-3.5 h-3.5 ml-0.5 text-white" fill="white" strokeWidth={0} />}
+                                ? <Pause className="w-3.5 h-3.5 text-ink-900" fill="currentColor" strokeWidth={0} />
+                                : <Play className="w-3.5 h-3.5 ml-0.5 text-ink-900" fill="currentColor" strokeWidth={0} />}
                             </button>
                           </div>
                         </div>

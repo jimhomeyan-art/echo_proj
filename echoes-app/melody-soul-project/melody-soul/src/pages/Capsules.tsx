@@ -118,7 +118,7 @@ export const CapsulesPage: React.FC = () => {
                 return (
                   <div
                     key={capsule.id}
-                    className="relative rounded-card overflow-hidden bg-ink-900 shadow-card animate-slide-up"
+                    className="relative rounded-card overflow-hidden bg-white border border-ink-100 animate-slide-up"
                     style={{ animationDelay: `${index * 60}ms` }}
                   >
                     {/* 大照片 */}
@@ -159,7 +159,7 @@ export const CapsulesPage: React.FC = () => {
                           <button
                             onClick={() => playCapsule(capsule)}
                             aria-label={showPause ? '暂停' : '播放'}
-                            className="w-14 h-14 rounded-full bg-white text-ink-900 flex items-center justify-center shadow-pop btn-press flex-shrink-0"
+                            className="w-14 h-14 rounded-full bg-echo-green text-ink-900 flex items-center justify-center shadow-flame btn-press flex-shrink-0"
                           >
                             {showPause
                               ? <Pause className="w-5 h-5" fill="currentColor" strokeWidth={0} />

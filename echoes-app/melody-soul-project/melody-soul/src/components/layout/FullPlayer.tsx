@@ -49,6 +49,13 @@ export const FullPlayer: React.FC = () => {
           <div className="absolute inset-0 bg-ink-900/60" />
         </div>
       )}
+      {/* 绿色环境光，呼应品牌色 */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 -left-40 w-[420px] h-[420px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(30,215,96,0.18) 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-40 -right-40 w-[380px] h-[380px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(155,242,133,0.12) 0%, transparent 70%)' }} />
+      </div>
 
       <div className="relative h-full flex flex-col max-w-md mx-auto text-white">
         {/* Header */}
@@ -174,7 +181,7 @@ export const FullPlayer: React.FC = () => {
               onClick={togglePlay}
               disabled={!nowPlaying.url}
               aria-label={isPlaying ? '暂停' : '播放'}
-              className="w-[72px] h-[72px] rounded-full bg-white text-ink-900 flex items-center justify-center shadow-pop btn-press disabled:opacity-40"
+              className="w-[72px] h-[72px] rounded-full bg-echo-green text-ink-900 flex items-center justify-center shadow-flame btn-press disabled:opacity-40 hover:scale-105 transition-transform"
             >
               {isPlaying
                 ? <Pause className="w-8 h-8" fill="currentColor" strokeWidth={0} />
