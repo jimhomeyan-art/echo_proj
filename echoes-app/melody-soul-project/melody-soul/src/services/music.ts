@@ -116,10 +116,10 @@ async function pollMusicStatus(
   musicType: string,
   onProgress?: (stage: string) => void
 ) {
-  const maxAttempts = 30
+  const maxAttempts = 50          // 最多等 200 秒，给服务器足够时间下载 stream
   const interval = 4000
-  // 拿到 stream_url 但没有 stable url 时，最多再多等几轮看能否变 stable
-  const maxStreamWaitRounds = 2  // 4s * 2 = 8 秒
+  // stream_url 现在由服务器后台下载，不再直接返回给前端
+  const maxStreamWaitRounds = 999 // 永不 fallback stream，让服务器下载完
   let streamWaitRounds = 0
   let lastResponse: MusicApiResponse | null = null
 

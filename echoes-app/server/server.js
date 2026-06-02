@@ -25,7 +25,7 @@ const _audioCachePromises = new Map()
 
 async function ensureAudioCached(taskId, remoteUrl) {
   const filePath = path.join(AUDIO_CACHE_DIR, `${taskId}.mp3`)
-  const localUrl = `/music/${taskId}.mp3`
+  const localUrl = `/api/music-cache/${taskId}.mp3`
 
   if (fs.existsSync(filePath)) return localUrl
   if (_audioCachePromises.has(taskId)) return _audioCachePromises.get(taskId)
@@ -68,8 +68,8 @@ app.use(cors({
 }))
 app.use(express.json())
 
-// 本地缓存 mp3 静态文件服务
-app.use('/music', express.static(AUDIO_CACHE_DIR, { maxAge: '7d' }))
+// 本地缓存 mp3 静态文件服务（必须用 /api/ 前缀，nginx 才会代理过来）
+app.use('/api/music-cache', express.static(AUDIO_CACHE_DIR, { maxAge: '7d' }))
 
 // 请求日志
 app.use((req, res, next) => {
@@ -158,9 +158,26 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
     const { taskId, musicType } = req.params
     const result = await getMusicStatus(taskId, musicType || 'instrumental')
 
+    const filePath = path.join(AUDIO_CACHE_DIR, `${taskId}.mp3`)
+
+    // ① 本地已缓存 → 直接返回静态文件 URL
+    if (fs.existsSync(filePath)) {
+      const localUrl = `/api/music-cache/${taskId}.mp3`
+      result.audioUrl = localUrl
+      result.isStable = true
+      result.status = 'completed'
+      if (result.data) {
+        result.data.music_url = localUrl
+        result.data.audio_url = localUrl
+        result.data.stream_url = null
+        result.data.status = 'completed'
+      }
+      return res.json(result)
+    }
+
     if (result.audioUrl && /^https?:\/\//.test(result.audioUrl)) {
       if (result.isStable) {
-        // stable URL：完整下载到本地，手机播静态文件，无缓冲
+        // ② stable URL：阻塞下载（通常很快），完成后返回本地路径
         const localUrl = await ensureAudioCached(taskId, result.audioUrl)
         if (localUrl) {
           result.audioUrl = localUrl
@@ -171,13 +188,21 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
           }
         }
       } else {
-        // 仍在流式生成中：走代理，比直连 Mureka CDN 快
-        const proxied = `/api/audio-proxy?url=${encodeURIComponent(result.audioUrl)}`
-        result.audioUrl = proxied
+        // ③ stream URL：后台下载，下载完成前告诉前端继续等待（不把流推给手机）
+        if (!_audioCachePromises.has(taskId)) {
+          console.log(`⬇️  Background stream download: ${taskId}`)
+          ensureAudioCached(taskId, result.audioUrl)
+            .then(u => u && console.log(`✅ Stream cached: ${taskId}`))
+            .catch(e => console.error(`❌ Stream cache failed (${taskId}):`, e.message))
+        }
+        // 隐藏流 URL，告知前端仍在处理，让它继续轮询
+        result.audioUrl = null
+        result.status = 'processing'
         if (result.data) {
-          if (result.data.music_url) result.data.music_url = proxied
-          if (result.data.audio_url) result.data.audio_url = proxied
-          if (result.data.stream_url) result.data.stream_url = proxied
+          result.data.music_url = null
+          result.data.audio_url = null
+          result.data.stream_url = null
+          result.data.status = 'processing'
         }
       }
     }
