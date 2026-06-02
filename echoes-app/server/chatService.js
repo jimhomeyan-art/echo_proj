@@ -307,6 +307,11 @@ function applyGenerationPolicy(result, messages) {
   const hasGenerated = alreadyGeneratedMusic(messages)
   // 统一信号：AI 是否在最近邀请 / 宣告 / 确认要创作
   const aiInvited = aiAskedConfirm || aiAnnouncedCreation || aiAlreadyStarted
+  // 用户第一句就直接要求创作（绕过轮数限制）
+  const isImmediateCreateRequest = userTurns <= 2 &&
+    /帮我(做|写|生成|创作)|来一首|做一首|写一首|给我(做|写|生成)/.test(
+      messages.filter(m => m.role === 'user').map(m => m.content).join('\n')
+    )
 
   // 已经生成过音乐：只要不是"AI 刚邀请 + 用户点头"，就继续聊不重复生成
   if (hasGenerated && !(aiInvited && userConfirmed)) {
@@ -322,7 +327,7 @@ function applyGenerationPolicy(result, messages) {
 
   // 强触发 0：用户已点头 + AI 之前就在问开始 → 绕过 question 守卫立即生成
   // 这是为了打断千问"反复问要不要开始"的死循环
-  if (pendingType && userConfirmed && aiAlreadyStarted) {
+  if (pendingType && userConfirmed && aiAlreadyStarted && (userTurns >= 3 || isImmediateCreateRequest)) {
     let styleHint = result.styleHint || ''
     // 强制保留性别偏好
     if (vocalGender === 'male' && !/male vocal|男声/i.test(styleHint)) {
@@ -359,7 +364,7 @@ function applyGenerationPolicy(result, messages) {
   }
 
   // 强触发 1：上一轮 AI 提到具体音乐类型 + 用户明确点头 → 立刻生成，不再反问
-  if (pendingType && userConfirmed && (aiAskedConfirm || aiAnnouncedCreation)) {
+  if (pendingType && userConfirmed && (aiAskedConfirm || aiAnnouncedCreation) && (userTurns >= 3 || isImmediateCreateRequest)) {
     let styleHint = result.styleHint || (pendingType === 'song'
       ? 'warm Mandarin pop, gentle groove, intimate vocal'
       : 'warm instrumental, gentle groove')
@@ -379,7 +384,7 @@ function applyGenerationPolicy(result, messages) {
   }
 
   // 强触发 2：AI 已明确宣告要开始创作 + pendingType 明确 + 千问也说 ready
-  if (result.readyToGenerate && pendingType && aiAnnouncedCreation) {
+  if (result.readyToGenerate && pendingType && aiAnnouncedCreation && (userTurns >= 3 || isImmediateCreateRequest)) {
     let styleHint = result.styleHint || ''
     if (vocalGender === 'male' && !/male vocal|男声/i.test(styleHint)) {
       styleHint += (styleHint ? ', ' : '') + 'Mandarin male vocal'
@@ -448,6 +453,15 @@ function applyGenerationPolicy(result, messages) {
       musicTitle: '',
       lyricsRequired: false,
       readyToGenerate: false
+    }
+  }
+
+  // 默认拒绝千问主动 readyToGenerate；必须用户明确点头确认 或 AI 已宣告创作，且至少 3 轮
+  if (result.readyToGenerate && (!userConfirmed || (!aiAskedConfirm && !aiAnnouncedCreation)) && userTurns < 3 && !isImmediateCreateRequest) {
+    return {
+      ...result,
+      readyToGenerate: false,
+      reply: result.reply
     }
   }
 

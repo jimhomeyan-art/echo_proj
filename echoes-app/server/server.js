@@ -3,6 +3,7 @@ require('dotenv').config()
 
 const express = require('express')
 const cors = require('cors')
+const axios = require('axios')
 const {
   generateMusic,
   getMusicStatus,
@@ -115,6 +116,19 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
   try {
     const { taskId, musicType } = req.params
     const result = await getMusicStatus(taskId, musicType || 'instrumental')
+
+    // 把 Mureka 外链替换成服务端代理 URL，避免用户直连跨网缓冲
+    if (result.audioUrl && /^https?:\/\//.test(result.audioUrl)) {
+      const proxied = `/api/audio-proxy?url=${encodeURIComponent(result.audioUrl)}`
+      result.audioUrl = proxied
+      if (result.data) {
+        if (result.data.music_url) result.data.music_url = proxied
+        if (result.data.audio_url) result.data.audio_url = proxied
+        if (result.data.stream_url) result.data.stream_url = proxied
+        if (result.data.stable_url) result.data.stable_url = proxied
+      }
+    }
+
     res.json(result)
   } catch (error) {
     console.error('❌ Music status failed:', error.response?.data || error.message)
@@ -186,6 +200,42 @@ app.post('/api/analyze', async (req, res) => {
       success: false,
       error: 'Analysis failed'
     })
+  }
+})
+
+// 音频代理：把 Mureka 外链通过服务器中转，避免用户直连跨网缓冲
+app.get('/api/audio-proxy', async (req, res) => {
+  const rawUrl = req.query.url
+  if (!rawUrl) return res.status(400).send('Missing url')
+
+  let targetUrl
+  try { targetUrl = decodeURIComponent(rawUrl) } catch { targetUrl = rawUrl }
+
+  try {
+    const headers = {}
+    if (req.headers.range) headers.Range = req.headers.range
+
+    const upstream = await axios({
+      method: 'get',
+      url: targetUrl,
+      responseType: 'stream',
+      headers,
+      timeout: 120000
+    })
+
+    res.status(req.headers.range ? (upstream.status === 206 ? 206 : 200) : 200)
+    res.setHeader('Content-Type', upstream.headers['content-type'] || 'audio/mpeg')
+    res.setHeader('Accept-Ranges', 'bytes')
+    res.setHeader('Cache-Control', 'public, max-age=3600')
+    if (upstream.headers['content-length']) res.setHeader('Content-Length', upstream.headers['content-length'])
+    if (upstream.headers['content-range']) res.setHeader('Content-Range', upstream.headers['content-range'])
+
+    upstream.data.pipe(res)
+    upstream.data.on('error', () => { if (!res.headersSent) res.status(502).end() })
+    req.on('close', () => upstream.data.destroy())
+  } catch (err) {
+    console.error('❌ Audio proxy error:', err.message)
+    if (!res.headersSent) res.status(502).send('Audio proxy failed')
   }
 })
 
