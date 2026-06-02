@@ -130,21 +130,25 @@ export const ChannelPage: React.FC = () => {
                             {post.music.duration}
                           </span>
                         </div>
-                        <div className="absolute left-3 right-3 bottom-3">
-                          <p className="text-white font-display font-bold text-[15px] leading-tight truncate">
-                            {post.music.title}
-                          </p>
-                          <p className="text-white/70 text-[11px] truncate mt-0.5">{post.user.username}</p>
-                        </div>
-                        <div className="absolute right-2 bottom-[-12px] w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-pop">
-                          <Play
-                            className="w-3.5 h-3.5 ml-0.5 text-ink-900"
-                            fill="currentColor"
-                            strokeWidth={0}
-                          />
+                        <div className="absolute left-3 right-3 bottom-3 flex items-end justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white font-display font-bold text-[15px] leading-tight truncate">
+                              {post.music.title}
+                            </p>
+                            <p className="text-white/70 text-[11px] truncate mt-0.5">
+                              {post.user.username}
+                            </p>
+                          </div>
+                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-pop flex-shrink-0">
+                            <Play
+                              className="w-3.5 h-3.5 ml-0.5 text-ink-900"
+                              fill="currentColor"
+                              strokeWidth={0}
+                            />
+                          </div>
                         </div>
                       </div>
-                      <p className="text-[11px] text-ink-500 mt-3">❤️ {post.likes}</p>
+                      <p className="text-[11px] text-ink-500 mt-2.5">❤️ {post.likes}</p>
                     </button>
                   );
                 })}
@@ -326,7 +330,7 @@ export const ChannelPage: React.FC = () => {
               </div>
             </div>
 
-            <button className="w-full py-3.5 rounded-pill bg-tinder-flame text-white font-semibold flex items-center justify-center gap-2 shadow-flame">
+            <button className="w-full py-3.5 rounded-pill bg-ink-900 text-white font-semibold flex items-center justify-center gap-2">
               <Send className="w-5 h-5" />
               发起流星通话
             </button>
