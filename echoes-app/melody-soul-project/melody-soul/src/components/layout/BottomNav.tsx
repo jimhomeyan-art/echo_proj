@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, MessageCircle, Sparkles, Pill, User, Flame } from 'lucide-react';
+import { Radio, MessageCircle, Pill, User, Music2 } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -9,7 +9,7 @@ interface BottomNavProps {
 const navItems = [
   { id: 'channel', icon: Radio, label: '频道' },
   { id: 'friends', icon: MessageCircle, label: '好友' },
-  { id: 'create', icon: Flame, label: '创作', isCenter: true },
+  { id: 'create', icon: Music2, label: '创作', isCenter: true },
   { id: 'capsules', icon: Pill, label: '胶囊' },
   { id: 'profile', icon: User, label: '我的' },
 ];
@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
-          // 中间创作按钮：Tinder 风格的"火焰" pill 形浮起
+          // 中间创作按钮：纯黑大圆 + 白色音符
           if (item.isCenter) {
             return (
               <button
@@ -38,12 +38,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
                 <div
                   className={`
                     w-14 h-14 rounded-full flex items-center justify-center
-                    shadow-flame transition-transform duration-300
-                    ${isActive ? 'scale-105' : 'hover:scale-105'}
-                    bg-gradient-to-br from-tinder-flame to-tinder-spark
+                    bg-ink-900 text-white shadow-pop
+                    transition-transform duration-300
+                    ${isActive ? 'scale-105 ring-2 ring-ink-900/10 ring-offset-2 ring-offset-white' : 'hover:scale-105'}
                   `}
                 >
-                  <Icon className="w-7 h-7 text-white" strokeWidth={2.4} fill="white" />
+                  <Icon className="w-6 h-6" strokeWidth={2.2} />
                 </div>
               </button>
             );
