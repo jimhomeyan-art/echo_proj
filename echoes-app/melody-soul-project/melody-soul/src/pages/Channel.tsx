@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Send, Heart, MessageCircle, Play, TrendingUp, Wifi, WifiOff } from 'lucide-react';
+import { Search, Bell, Send, Heart, MessageCircle, Play, TrendingUp, Wifi, WifiOff, Users, Hash } from 'lucide-react';
 import { Avatar } from '../components/common/Avatar';
 import { FeedCard } from '../components/common/FeedCard';
 import { feedPosts, recommendedUsers, currentUser } from '../data/mockData';
@@ -10,6 +10,7 @@ export const ChannelPage: React.FC = () => {
   const [currentFrequency, setCurrentFrequency] = useState(285);
   const [selectedMood, setSelectedMood] = useState('平静');
   const [activeSection, setActiveSection] = useState<'feed' | 'frequency'>('feed');
+  const [resonateSubTab, setResonateSubTab] = useState<'people' | 'groups'>('people');
   const { setNowPlaying, openFullPlayer, toggleCapsule, isCapsuled, nowPlaying, isPlaying, togglePlay } = useChat();
 
   const moods = ['平静', '忧郁', '兴奋', '开心', '浪漫', '沉思'];
@@ -40,6 +41,67 @@ export const ChannelPage: React.FC = () => {
     { id: 1, name: '海浪低语', frequency: 285, mood: '平静', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
     { id: 2, name: '星空漫步', frequency: 320, mood: '沉思', avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop' },
     { id: 3, name: '月光咖啡馆', frequency: 296, mood: '平静', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop' },
+  ];
+
+  const resonateGroups = [
+    {
+      id: 'g1',
+      name: '深夜钢琴会客厅',
+      desc: '在凌晨找钢琴的人',
+      members: 327,
+      online: 32,
+      mood: '沉思',
+      cover: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=400&fit=crop',
+      avatars: [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop',
+      ],
+      joined: true,
+    },
+    {
+      id: 'g2',
+      name: '失眠人士同频',
+      desc: '一起把夜晚熬成歌',
+      members: 1568,
+      online: 156,
+      mood: '忧郁',
+      cover: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=400&fit=crop',
+      avatars: [
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop',
+      ],
+      joined: false,
+    },
+    {
+      id: 'g3',
+      name: 'Shoegaze 朦胧吉他',
+      desc: '失真之下都温柔',
+      members: 894,
+      online: 89,
+      mood: '梦幻',
+      cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop',
+      avatars: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop',
+      ],
+      joined: false,
+    },
+    {
+      id: 'g4',
+      name: '雨天散步小屋',
+      desc: '雨声 + 慢节奏',
+      members: 462,
+      online: 41,
+      mood: '平静',
+      cover: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=400&fit=crop',
+      avatars: [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop',
+        'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=80&h=80&fit=crop',
+      ],
+      joined: true,
+    },
   ];
 
   return (
@@ -293,46 +355,150 @@ export const ChannelPage: React.FC = () => {
               </button>
             </div>
 
-            {/* 附近同频者 */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-[18px] font-display font-bold text-ink-900">附近同频者</h2>
-                <span className="text-[12px] text-ink-500">{nearbyUsers.length} 人在线</span>
-              </div>
-              <div className="space-y-2">
-                {nearbyUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center gap-3 rounded-card border border-ink-100 p-3 hover:border-ink-300 transition-colors cursor-pointer"
-                  >
-                    <div className="relative">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-pill bg-ink-900 text-white text-[10px] font-semibold">
-                        {user.frequency}Hz
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-[14px] text-ink-900">{user.name}</h3>
-                      <p className="text-[12px] text-ink-500">{user.mood}</p>
-                    </div>
-                    <button className="w-9 h-9 rounded-full bg-ink-50 hover:bg-ink-100 flex items-center justify-center text-ink-900">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-                    <button className="w-9 h-9 rounded-full bg-tinder-flame/10 hover:bg-tinder-flame/20 flex items-center justify-center text-tinder-flame">
-                      <Heart className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+            {/* 同频者 / 群组 子 tab */}
+            <div className="mb-3">
+              <div className="inline-flex p-1 rounded-pill bg-ink-50">
+                <button
+                  onClick={() => setResonateSubTab('people')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-[13px] font-semibold transition-colors ${
+                    resonateSubTab === 'people' ? 'bg-ink-900 text-white' : 'text-ink-500'
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  同频者
+                </button>
+                <button
+                  onClick={() => setResonateSubTab('groups')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-[13px] font-semibold transition-colors ${
+                    resonateSubTab === 'groups' ? 'bg-ink-900 text-white' : 'text-ink-500'
+                  }`}
+                >
+                  <Hash className="w-3.5 h-3.5" />
+                  兴趣群组
+                </button>
               </div>
             </div>
 
+            {/* 个人 */}
+            {resonateSubTab === 'people' && (
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[18px] font-display font-bold text-ink-900">附近同频者</h2>
+                  <span className="text-[12px] text-ink-500">{nearbyUsers.length} 人在线</span>
+                </div>
+                <div className="space-y-2">
+                  {nearbyUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center gap-3 rounded-card border border-ink-100 p-3 hover:border-ink-300 transition-colors cursor-pointer"
+                    >
+                      <div className="relative">
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-pill bg-ink-900 text-white text-[10px] font-semibold">
+                          {user.frequency}Hz
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-[14px] text-ink-900">{user.name}</h3>
+                        <p className="text-[12px] text-ink-500">{user.mood}</p>
+                      </div>
+                      <button className="w-9 h-9 rounded-full bg-ink-50 hover:bg-ink-100 flex items-center justify-center text-ink-900">
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button className="w-9 h-9 rounded-full bg-tinder-flame/10 hover:bg-tinder-flame/20 flex items-center justify-center text-tinder-flame">
+                        <Heart className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 群组 */}
+            {resonateSubTab === 'groups' && (
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[18px] font-display font-bold text-ink-900">兴趣群组</h2>
+                  <button className="text-[12px] text-ink-500 font-medium">+ 创建群</button>
+                </div>
+                <div className="space-y-3">
+                  {resonateGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="rounded-card border border-ink-100 overflow-hidden hover:border-ink-300 transition-colors cursor-pointer"
+                    >
+                      <div className="flex gap-3 p-3">
+                        <div className="relative w-[72px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 bg-ink-100">
+                          <img
+                            src={group.cover}
+                            alt={group.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                          <div className="absolute bottom-1 left-1 right-1 flex items-center gap-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-tinder-lime" />
+                            <span className="text-[9px] font-semibold text-white">
+                              {group.online} 在线
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h3 className="font-semibold text-[14.5px] text-ink-900 truncate">
+                                # {group.name}
+                              </h3>
+                              <p className="text-[12px] text-ink-500 truncate mt-0.5">{group.desc}</p>
+                            </div>
+                            <button
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-pill text-[12px] font-semibold btn-press transition-colors ${
+                                group.joined
+                                  ? 'border border-ink-100 text-ink-900 bg-white'
+                                  : 'bg-ink-900 text-white'
+                              }`}
+                            >
+                              {group.joined ? '已加入' : '加入'}
+                            </button>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <div className="flex -space-x-2">
+                              {group.avatars.map((a, i) => (
+                                <img
+                                  key={i}
+                                  src={a}
+                                  alt=""
+                                  className="w-5 h-5 rounded-full border-2 border-white object-cover"
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[11px] text-ink-500">
+                              {group.members.toLocaleString()} 成员 · 「{group.mood}」
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button className="w-full py-3.5 rounded-pill bg-ink-900 text-white font-semibold flex items-center justify-center gap-2">
-              <Send className="w-5 h-5" />
-              发起流星通话
+              {resonateSubTab === 'people' ? (
+                <>
+                  <Send className="w-5 h-5" />
+                  发起流星通话
+                </>
+              ) : (
+                <>
+                  <Hash className="w-5 h-5" />
+                  发现更多群组
+                </>
+              )}
             </button>
           </>
         )}
