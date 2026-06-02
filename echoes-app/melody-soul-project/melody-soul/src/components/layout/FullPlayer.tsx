@@ -78,7 +78,7 @@ export const FullPlayer: React.FC = () => {
 
         {/* 大封�?*/}
         <div className="px-6 mt-2 flex-shrink-0">
-          <div className="aspect-square w-full max-w-[280px] mx-auto rounded-card overflow-hidden shadow-pop relative bg-ink-700">
+          <div className="aspect-square w-full max-w-[220px] mx-auto rounded-card overflow-hidden shadow-pop relative bg-ink-700">
             {nowPlaying.cover ? (
               <img src={nowPlaying.cover} alt={nowPlaying.title} className="w-full h-full object-cover" />
             ) : (
@@ -90,7 +90,7 @@ export const FullPlayer: React.FC = () => {
         </div>
 
         {/* 标题 + 艺人 */}
-        <div className="px-6 mt-5 flex-shrink-0">
+        <div className="px-6 mt-3 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <h2 className="text-[24px] font-display font-bold tracking-tight truncate">
@@ -130,7 +130,7 @@ export const FullPlayer: React.FC = () => {
         </div>
 
         {/* 歌词区 */}
-        <div className="flex-1 overflow-y-auto mt-6 scrollbar-hide">
+        <div className="flex-1 min-h-0 overflow-y-auto mt-4 scrollbar-hide">
           {lyricsLines.length > 0 && lyricsLines.some(l => l.trim()) ? (
             <div className="px-6 space-y-1 pb-6 text-center">
               {lyricsLines.map((line, idx) => {
@@ -159,7 +159,7 @@ export const FullPlayer: React.FC = () => {
         </div>
 
         {/* 控件区 */}
-        <div className="flex-shrink-0 px-6 pb-10 pt-4">
+        <div className="flex-shrink-0 px-6 pt-4" style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom, 2.5rem))' }}>
         {/* 进度条 */}
           <ProgressBar
             variant="full"
