@@ -5,16 +5,15 @@ import { EchoAvatar } from '../common/EchoAvatar'
 import { ProgressBar } from '../common/ProgressBar'
 
 /**
- * 全屏歌曲详情 - 类似 Spotify / 网易云
- * 显示：封面、标题、创作者、分段歌词、播放控件、进度条
+ * 全屏歌曲详情 - Tinder 风：黑底 + 大封面 + 干净控件
  */
 export const FullPlayer: React.FC = () => {
   const {
     isFullPlayerOpen, closeFullPlayer, nowPlaying, isPlaying, togglePlay, audioRef,
     currentTime, duration, seek,
+    isCapsuled, toggleCapsule,
   } = useChat()
 
-  // 阻止 body 背景滚动
   useEffect(() => {
     if (isFullPlayerOpen) {
       const original = document.body.style.overflow
@@ -23,7 +22,6 @@ export const FullPlayer: React.FC = () => {
     }
   }, [isFullPlayerOpen])
 
-  // ESC 关闭
   useEffect(() => {
     if (!isFullPlayerOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -36,85 +34,108 @@ export const FullPlayer: React.FC = () => {
   if (!isFullPlayerOpen || !nowPlaying) return null
 
   const lyricsLines = (nowPlaying.lyrics || '').split('\n')
+  const liked = isCapsuled(nowPlaying.id)
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 animate-slide-up overflow-hidden">
-      {/* 装饰光球 */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-400/30 rounded-full blur-3xl" />
-      </div>
+    <div className="fixed inset-0 z-[100] bg-ink-900 animate-slide-up overflow-hidden">
+      {/* 模糊封面背景 */}
+      {nowPlaying.cover && (
+        <div className="pointer-events-none absolute inset-0 opacity-50">
+          <img
+            src={nowPlaying.cover}
+            alt=""
+            className="w-full h-full object-cover blur-3xl scale-125"
+          />
+          <div className="absolute inset-0 bg-ink-900/60" />
+        </div>
+      )}
 
       <div className="relative h-full flex flex-col max-w-md mx-auto text-white">
         {/* Header */}
-        <header className="flex items-center justify-between px-5 pt-12 pb-4">
+        <header className="flex items-center justify-between px-5 pt-12 pb-3 flex-shrink-0">
           <button
             onClick={closeFullPlayer}
-            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors btn-press"
+            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press"
+            aria-label="关闭"
           >
             <ChevronDown className="w-5 h-5" />
           </button>
-          <div className="text-center flex-1">
-            <p className="text-[11px] text-white/60 uppercase tracking-widest">Echoes</p>
-            <p className="text-sm font-medium truncate max-w-[200px] mx-auto">{nowPlaying.title}</p>
+          <div className="text-center flex-1 px-2">
+            <p className="text-[10px] text-white/50 uppercase tracking-[0.2em]">正在播放</p>
+            <p className="text-[13px] font-semibold truncate mt-0.5">{nowPlaying.title}</p>
           </div>
-          <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors btn-press">
+          <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press">
             <MoreVertical className="w-5 h-5" />
           </button>
         </header>
 
-        {/* 封面 + 标题 */}
-        <div className="px-6 mt-2">
-          <div className="aspect-square w-full max-w-xs mx-auto rounded-3xl overflow-hidden shadow-2xl relative">
+        {/* 大封面 */}
+        <div className="px-6 mt-2 flex-shrink-0">
+          <div className="aspect-square w-full max-w-[280px] mx-auto rounded-card overflow-hidden shadow-pop relative bg-ink-700">
             {nowPlaying.cover ? (
               <img src={nowPlaying.cover} alt={nowPlaying.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="w-full h-full bg-ink-700 flex items-center justify-center">
                 <EchoAvatar size={120} />
               </div>
             )}
-            {/* 浮动播放波纹 */}
-            {isPlaying && (
-              <div className="absolute bottom-3 left-3 right-3 flex items-end justify-center gap-1 h-8">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                  <div
-                    key={i}
-                    className="w-1 bg-white/80 rounded-full music-wave"
-                    style={{
-                      height: `${8 + (i % 4) * 4}px`,
-                      animationDelay: `${i * 80}ms`
-                    }}
-                  />
-                ))}
-              </div>
-            )}
           </div>
+        </div>
 
-          <div className="mt-6 text-center">
-            <h2 className="text-2xl font-bold tracking-wide">{nowPlaying.title}</h2>
-            <p className="text-sm text-white/60 mt-2">
-              创作者:&nbsp;<span className="text-white/90">{nowPlaying.creator || '我自己'}</span>
-              <span className="mx-2 text-white/30">·</span>
-              <span className="text-white/70">{nowPlaying.artist || 'Echoes AI'}</span>
-            </p>
+        {/* 标题 + 艺人 */}
+        <div className="px-6 mt-5 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-[24px] font-display font-bold tracking-tight truncate">
+                {nowPlaying.title}
+              </h2>
+              <p className="text-[13px] text-white/60 mt-1 truncate">
+                {nowPlaying.creator || nowPlaying.artist || 'Echoes AI'}
+                {nowPlaying.mood && (
+                  <span className="ml-2 text-white/40">· 「{nowPlaying.mood}」</span>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                toggleCapsule({
+                  id: nowPlaying.id,
+                  title: nowPlaying.title,
+                  cover: nowPlaying.cover,
+                  url: nowPlaying.url,
+                  mood: nowPlaying.mood,
+                  createdAt: new Date().toISOString().slice(0, 10),
+                  plays: 0,
+                  source: 'liked',
+                  creator: nowPlaying.creator,
+                  lyrics: nowPlaying.lyrics,
+                })
+              }}
+              aria-label={liked ? '从胶囊移除' : '收入胶囊'}
+              className={`w-11 h-11 rounded-full flex items-center justify-center btn-press transition-colors ${
+                liked ? 'bg-tinder-flame text-white' : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <Heart className="w-5 h-5" fill={liked ? 'currentColor' : 'none'} />
+            </button>
           </div>
         </div>
 
         {/* 歌词区 */}
-        <div className="flex-1 overflow-y-auto px-6 mt-6 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto mt-6 scrollbar-hide">
           {lyricsLines.length > 0 && lyricsLines.some(l => l.trim()) ? (
-            <div className="space-y-2 pb-8 text-center">
+            <div className="px-6 space-y-1 pb-6 text-center">
               {lyricsLines.map((line, idx) => {
                 const trimmed = line.trim()
-                if (!trimmed) return <div key={idx} className="h-4" />
+                if (!trimmed) return <div key={idx} className="h-3" />
                 const isSection = /^\[.+\]$/.test(trimmed)
                 return (
                   <p
                     key={idx}
                     className={
                       isSection
-                        ? 'text-[11px] uppercase tracking-widest text-pink-300 mt-6 mb-1 font-medium'
-                        : 'text-base text-white/85 leading-relaxed'
+                        ? 'text-[10px] uppercase tracking-[0.25em] text-tinder-flame mt-5 mb-1 font-semibold'
+                        : 'text-[15px] text-white/80 leading-relaxed'
                     }
                   >
                     {trimmed}
@@ -129,55 +150,59 @@ export const FullPlayer: React.FC = () => {
           )}
         </div>
 
-        {/* 控件 */}
-        <div className="flex-shrink-0 px-6 pb-10 pt-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent">
+        {/* 控件区 */}
+        <div className="flex-shrink-0 px-6 pb-10 pt-4">
           {/* 进度条 */}
           <ProgressBar
             variant="full"
             currentTime={currentTime}
             duration={duration}
             onSeek={seek}
-            className="mb-4"
+            className="mb-5"
           />
 
-          <div className="flex items-center gap-2 mb-4">
-            <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors">
-              <Heart className="w-4 h-4" />
+          {/* 主控件：上一曲 / 大圆 play / 下一曲 */}
+          <div className="flex items-center justify-center gap-10">
+            <button
+              onClick={() => audioRef.current && (audioRef.current.currentTime = 0)}
+              aria-label="上一曲"
+              className="text-white/70 hover:text-white btn-press"
+            >
+              <SkipBack className="w-7 h-7" fill="currentColor" strokeWidth={0} />
             </button>
-            <button className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors">
+            <button
+              onClick={togglePlay}
+              disabled={!nowPlaying.url}
+              aria-label={isPlaying ? '暂停' : '播放'}
+              className="w-[72px] h-[72px] rounded-full bg-white text-ink-900 flex items-center justify-center shadow-pop btn-press disabled:opacity-40"
+            >
+              {isPlaying
+                ? <Pause className="w-8 h-8" fill="currentColor" strokeWidth={0} />
+                : <Play className="w-8 h-8 ml-1" fill="currentColor" strokeWidth={0} />}
+            </button>
+            <button aria-label="下一曲" className="text-white/70 hover:text-white btn-press">
+              <SkipForward className="w-7 h-7" fill="currentColor" strokeWidth={0} />
+            </button>
+          </div>
+
+          {/* 次操作：分享 / 下载 */}
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <button
+              aria-label="分享"
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press"
+            >
               <Share2 className="w-4 h-4" />
             </button>
             {nowPlaying.url && (
               <a
                 href={nowPlaying.url}
                 download
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors"
+                aria-label="下载"
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press"
               >
                 <Download className="w-4 h-4" />
               </a>
             )}
-            <div className="flex-1" />
-          </div>
-
-          <div className="flex items-center justify-center gap-8">
-            <button
-              onClick={() => audioRef.current && (audioRef.current.currentTime = 0)}
-              className="p-2 text-white/70 hover:text-white transition-colors"
-            >
-              <SkipBack className="w-7 h-7" />
-            </button>
-            <button
-              onClick={togglePlay}
-              disabled={!nowPlaying.url}
-              className="w-16 h-16 rounded-full bg-white text-purple-900 flex items-center justify-center shadow-2xl btn-press disabled:opacity-50"
-            >
-              {isPlaying
-                ? <Pause className="w-7 h-7" fill="currentColor" />
-                : <Play className="w-7 h-7 ml-1" fill="currentColor" />}
-            </button>
-            <button className="p-2 text-white/70 hover:text-white transition-colors">
-              <SkipForward className="w-7 h-7" />
-            </button>
           </div>
         </div>
       </div>

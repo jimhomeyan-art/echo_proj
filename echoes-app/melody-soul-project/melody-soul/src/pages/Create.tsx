@@ -376,24 +376,24 @@ export const CreatePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-        <div className="max-w-md mx-auto px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <EchoAvatar size={40} withGlow />
-            <div>
-              <h1 className="text-lg font-display font-bold text-text-primary">Echo · 情绪音乐</h1>
-              <p className="text-xs text-text-secondary">和我聊聊，我帮你做一首歌</p>
-            </div>
+      <header className="sticky top-0 z-30 bg-white">
+        <div className="max-w-md mx-auto px-5 pt-5 pb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-[28px] font-display font-bold text-ink-900 leading-none tracking-tight">
+              创作
+            </h1>
+            <p className="text-[13px] text-ink-500 mt-1.5">和 Echo 聊聊，把心情变成一首歌</p>
           </div>
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="p-2 rounded-xl bg-gray-100 text-text-secondary hover:text-text-primary transition-colors btn-press relative"
+            className="w-10 h-10 rounded-full border border-ink-100 flex items-center justify-center text-ink-900 btn-press relative"
+            aria-label="历史"
           >
-            <Clock className="w-5 h-5" />
+            <Clock className="w-4 h-4" />
             {showHistory && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary" />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-tinder-flame" />
             )}
           </button>
         </div>
@@ -401,31 +401,28 @@ export const CreatePage: React.FC = () => {
 
       {/* History Panel */}
       {showHistory && (
-        <div className="bg-white border-b border-gray-100 animate-slide-down">
-          <div className="max-w-md mx-auto px-5 py-3">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-text-primary">创作历史</h3>
-              <button onClick={() => setShowHistory(false)} className="p-1 text-text-secondary hover:text-text-primary">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="text-xs text-text-muted">历史记录将在登录后同步。</div>
+        <div className="bg-white border-b border-ink-100 animate-slide-down">
+          <div className="max-w-md mx-auto px-5 py-3 flex items-center justify-between">
+            <h3 className="text-[13px] font-semibold text-ink-900">创作历史</h3>
+            <button onClick={() => setShowHistory(false)} className="p-1 text-ink-500 hover:text-ink-900">
+              <X className="w-4 h-4" />
+            </button>
           </div>
+          <p className="px-5 pb-3 text-[12px] text-ink-500">历史记录将在登录后同步。</p>
         </div>
       )}
 
-      {/* Emotion Tags */}
-      <div className="max-w-md mx-auto px-5 py-3 w-full">
-        <div className="flex gap-2 overflow-x-auto pb-2">
+      {/* 心情标签 - chip 风格 */}
+      <div className="max-w-md mx-auto px-5 py-2 w-full">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {emotionTags.map(emotion => (
             <button
               key={emotion.id}
               onClick={() => handleEmotionClick(emotion)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-sm font-medium whitespace-nowrap btn-press hover:shadow-soft transition-all"
-              style={{ borderColor: `${emotion.color}40`, borderWidth: 1 }}
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill bg-white border border-ink-100 text-[12px] font-medium text-ink-900 hover:border-ink-300 btn-press transition-colors"
             >
               <span>{emotion.emoji}</span>
-              <span style={{ color: emotion.color }}>{emotion.label}</span>
+              <span>{emotion.label}</span>
             </button>
           ))}
         </div>
@@ -445,155 +442,161 @@ export const CreatePage: React.FC = () => {
             >
               {/* Avatar */}
               {message.role === 'assistant' ? (
-                <EchoAvatar size={40} />
+                <EchoAvatar size={36} />
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0" />
+                <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-ink-500 text-[12px] font-semibold">
+                    {currentUser.name?.slice(0, 1) || 'U'}
+                  </span>
+                </div>
               )}
 
               {/* Content */}
               <div className={`flex-1 max-w-[78%] ${message.role === 'user' ? 'items-end' : ''}`}>
                 {message.type === 'music' && message.music ? (
-                  <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-4 border border-primary/20">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      <span className="text-xs text-primary font-medium">
-                        {message.music.isGenerating ? 'AI 正在创作' : 'AI 已为你创作'}
-                      </span>
-                    </div>
-                    <div className="bg-white rounded-xl overflow-hidden shadow-soft">
-                      <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-secondary/20">
-                        <img
-                          src={message.music.cover || defaultMusicCover}
-                          alt={message.music.title}
-                          className="w-full h-full object-cover opacity-70"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                        {message.music.isGenerating ? (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="flex items-end gap-1 h-10">
-                              {[1, 2, 3, 4, 5].map(i => (
-                                <div
-                                  key={i}
-                                  className="w-2 bg-white rounded-full music-wave"
-                                  style={{ height: `${10 + i * 4}px` }}
-                                />
-                              ))}
-                            </div>
+                  <div className="rounded-card overflow-hidden bg-ink-900 shadow-card">
+                    {/* 大封面 */}
+                    <div className="relative aspect-[4/5] bg-ink-700">
+                      <img
+                        src={message.music.cover || defaultMusicCover}
+                        alt={message.music.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 photo-overlay" />
+                      {message.music.isGenerating && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <div className="flex items-end gap-1 h-10">
+                            {[1, 2, 3, 4, 5].map(i => (
+                              <div
+                                key={i}
+                                className="w-2 bg-white rounded-full music-wave"
+                                style={{ height: `${10 + i * 4}px`, animationDelay: `${i * 80}ms` }}
+                              />
+                            ))}
                           </div>
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center shadow-primary">
-                              <Music2 className="w-8 h-8 text-white" />
-                            </div>
-                          </div>
-                        )}
+                        </div>
+                      )}
+                      {/* 状态 chip */}
+                      <div className="absolute top-3 left-3">
+                        <span className="chip-dark">
+                          <Sparkles className="w-3 h-3" />
+                          {message.music.isGenerating ? 'AI 正在创作' : 'AI 创作'}
+                        </span>
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-base text-text-primary">{message.music.title}</h3>
-                        <div className="flex items-center gap-2 mt-2">
+                      {/* 底部标题 */}
+                      <div className="absolute left-4 right-4 bottom-4">
+                        <h3 className="font-display font-bold text-2xl text-white tracking-tight leading-tight">
+                          {message.music.title}
+                        </h3>
+                        {message.music.status && (
+                          <p className="text-[12px] text-white/70 mt-1.5">{message.music.status}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1.5 mt-2">
                           {message.music.style && (
-                            <span className="text-xs text-text-secondary px-2 py-1 rounded-full bg-gray-100">
-                              {message.music.style}
-                            </span>
+                            <span className="chip-dark">{message.music.style}</span>
                           )}
                           {message.music.mood && (
-                            <span className="text-xs text-text-secondary px-2 py-1 rounded-full bg-gray-100">
-                              {message.music.mood}
-                            </span>
+                            <span className="chip-dark">{message.music.mood}</span>
                           )}
                         </div>
-                        {message.music.status && (
-                          <p className="text-xs text-text-muted mt-3">{message.music.status}</p>
-                        )}
-                        {message.music.url && (
-                          <button
-                            onClick={() => {
-                              setNowPlaying({
-                                id: message.music!.id,
-                                title: message.music!.title,
-                                cover: message.music!.cover,
-                                artist: 'Echoes AI',
-                                url: message.music!.url,
-                                lyrics: message.music!.lyrics,
-                                creator: message.music!.creator || currentUser.name
-                              })
-                              openFullPlayer()
-                            }}
-                            className="w-full mt-3 py-2.5 rounded-xl gradient-primary shadow-primary text-white text-sm font-medium flex items-center justify-center gap-2 btn-press"
-                          >
-                            <Music2 className="w-4 h-4" />
-                            打开歌曲详情
-                          </button>
-                        )}
-                        {!message.music.isGenerating && message.music.url && (() => {
-                          const m = message.music!
-                          const isCurrent = nowPlaying?.id === m.id
-                          const showPause = isCurrent && isPlaying
-                          const liked = isCapsuled(m.id)
-                          return (
-                            <div className="mt-3 flex items-center justify-between gap-2">
-                              <button
-                                onClick={() => {
-                                  if (isCurrent) {
-                                    togglePlay()
-                                  } else {
-                                    setNowPlaying({
-                                      id: m.id,
-                                      title: m.title,
-                                      cover: m.cover,
-                                      artist: 'Echoes AI',
-                                      url: m.url,
-                                      lyrics: m.lyrics,
-                                      creator: m.creator || currentUser.name,
-                                      mood: m.mood,
-                                    })
-                                  }
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-full gradient-primary shadow-primary text-white text-xs font-medium btn-press"
-                              >
-                                {showPause
-                                  ? <Pause className="w-3.5 h-3.5" fill="white" />
-                                  : <Play className="w-3.5 h-3.5 ml-0.5" fill="white" />}
-                                {showPause ? '暂停' : '播放'}
-                              </button>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => {
-                                    toggleCapsule({
-                                      id: m.id,
-                                      title: m.title,
-                                      cover: m.cover,
-                                      duration: m.duration,
-                                      url: m.url,
-                                      mood: m.mood,
-                                      styleTag: m.style,
-                                      createdAt: new Date().toISOString().slice(0, 10),
-                                      plays: 0,
-                                      source: 'created',
-                                      creator: m.creator || currentUser.name,
-                                      lyrics: m.lyrics,
-                                    })
-                                  }}
-                                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${liked ? 'text-secondary' : 'text-text-secondary'}`}
-                                  title={liked ? '已收入胶囊' : '收入胶囊'}
-                                >
-                                  <Heart className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} />
-                                </button>
-                                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                  <Share2 className="w-4 h-4 text-text-secondary" />
-                                </button>
-                                <a
-                                  href={m.url}
-                                  download
-                                  className="p-2 rounded-full gradient-primary shadow-primary"
-                                >
-                                  <Download className="w-4 h-4 text-white" />
-                                </a>
-                              </div>
-                            </div>
-                          )
-                        })()}
                       </div>
+                    </div>
+
+                    {/* 操作栏 */}
+                    <div className="bg-white p-3">
+                      {message.music.url ? (() => {
+                        const m = message.music!
+                        const isCurrent = nowPlaying?.id === m.id
+                        const showPause = isCurrent && isPlaying
+                        const liked = isCapsuled(m.id)
+                        return (
+                          <div className="flex items-center gap-2">
+                            {/* 播放 */}
+                            <button
+                              onClick={() => {
+                                if (isCurrent) {
+                                  togglePlay()
+                                } else {
+                                  setNowPlaying({
+                                    id: m.id,
+                                    title: m.title,
+                                    cover: m.cover,
+                                    artist: 'Echoes AI',
+                                    url: m.url,
+                                    lyrics: m.lyrics,
+                                    creator: m.creator || currentUser.name,
+                                    mood: m.mood,
+                                  })
+                                }
+                              }}
+                              aria-label={showPause ? '暂停' : '播放'}
+                              className="w-11 h-11 rounded-full bg-ink-900 text-white flex items-center justify-center btn-press flex-shrink-0"
+                            >
+                              {showPause
+                                ? <Pause className="w-4 h-4" fill="white" strokeWidth={0} />
+                                : <Play className="w-4 h-4 ml-0.5" fill="white" strokeWidth={0} />}
+                            </button>
+                            {/* 详情 */}
+                            <button
+                              onClick={() => {
+                                setNowPlaying({
+                                  id: m.id,
+                                  title: m.title,
+                                  cover: m.cover,
+                                  artist: 'Echoes AI',
+                                  url: m.url,
+                                  lyrics: m.lyrics,
+                                  creator: m.creator || currentUser.name,
+                                  mood: m.mood,
+                                })
+                                openFullPlayer()
+                              }}
+                              className="flex-1 h-11 rounded-pill bg-ink-50 text-ink-900 text-[13px] font-semibold flex items-center justify-center gap-1.5 btn-press hover:bg-ink-100"
+                            >
+                              <Music2 className="w-4 h-4" />
+                              打开详情
+                            </button>
+                            {/* 心 */}
+                            <button
+                              onClick={() => {
+                                toggleCapsule({
+                                  id: m.id,
+                                  title: m.title,
+                                  cover: m.cover,
+                                  duration: m.duration,
+                                  url: m.url,
+                                  mood: m.mood,
+                                  styleTag: m.style,
+                                  createdAt: new Date().toISOString().slice(0, 10),
+                                  plays: 0,
+                                  source: 'created',
+                                  creator: m.creator || currentUser.name,
+                                  lyrics: m.lyrics,
+                                })
+                              }}
+                              aria-label={liked ? '已收入胶囊' : '收入胶囊'}
+                              className={`w-11 h-11 rounded-full flex items-center justify-center btn-press transition-colors ${
+                                liked ? 'bg-tinder-flame/10 text-tinder-flame' : 'bg-ink-50 text-ink-500 hover:text-tinder-flame'
+                              }`}
+                            >
+                              <Heart className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} />
+                            </button>
+                            {/* 下载 */}
+                            <a
+                              href={m.url}
+                              download
+                              aria-label="下载"
+                              className="w-11 h-11 rounded-full bg-ink-50 text-ink-500 hover:text-ink-900 flex items-center justify-center btn-press"
+                            >
+                              <Download className="w-4 h-4" />
+                            </a>
+                          </div>
+                        )
+                      })() : (
+                        <p className="text-[12px] text-ink-500 text-center py-2">
+                          {message.music.status || '正在创作…'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ) : message.type === 'naming' && message.naming ? (
@@ -604,24 +607,24 @@ export const CreatePage: React.FC = () => {
                     onSubmit={handleNamingSubmit}
                   />
                 ) : (
-                  <div className={`rounded-2xl px-4 py-3 ${message.role === 'user'
-                    ? 'gradient-primary text-white rounded-tr-sm'
-                    : 'bg-white rounded-tl-sm shadow-soft'
+                  <div className={`rounded-2xl px-4 py-2.5 ${message.role === 'user'
+                    ? 'bg-ink-900 text-white rounded-tr-md'
+                    : 'bg-ink-50 text-ink-900 rounded-tl-md'
                   }`}>
-                    <p className={`text-sm leading-relaxed whitespace-pre-line ${message.role === 'user' ? 'text-white' : 'text-text-primary'}`}>
+                    <p className={`text-[14.5px] leading-relaxed whitespace-pre-line ${message.role === 'user' ? 'text-white' : 'text-ink-900'}`}>
                       {message.content}
                     </p>
                     {message.role === 'assistant' && extractStyleOptions(message.content || '').length > 0 && (() => {
                       const isLastAI = messages.filter(m => m.role === 'assistant').slice(-1)[0]?.id === message.id
                       if (!isLastAI) return null
                       return (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                        <div className="flex flex-wrap gap-1.5 mt-3">
                           {extractStyleOptions(message.content || '').map(opt => (
                             <button
                               key={opt}
                               onClick={() => handleSend(opt)}
                               disabled={isTyping}
-                              className="px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-pill bg-white border border-ink-100 text-ink-900 text-[12px] font-medium hover:border-ink-300 transition-colors disabled:opacity-50"
                             >
                               {opt}
                             </button>
@@ -631,7 +634,7 @@ export const CreatePage: React.FC = () => {
                     })()}
                   </div>
                 )}
-                <p className="text-xs text-text-muted mt-1 px-1">{message.timestamp}</p>
+                <p className="text-[11px] text-ink-300 mt-1 px-1">{message.timestamp}</p>
               </div>
             </div>
           ))}
@@ -639,13 +642,13 @@ export const CreatePage: React.FC = () => {
           {/* Typing Indicator */}
           {isTyping && (
             <div className="flex gap-3 animate-slide-up">
-              <EchoAvatar size={40} />
+              <EchoAvatar size={36} />
               <div className="flex-1 max-w-[78%]">
-                <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-4 shadow-soft inline-flex items-center gap-2">
+                <div className="bg-ink-50 rounded-2xl rounded-tl-md px-4 py-3 inline-flex items-center gap-1.5">
                   {[1, 2, 3].map(i => (
                     <span
                       key={i}
-                      className="w-2 h-2 rounded-full bg-primary/60 music-wave"
+                      className="w-1.5 h-1.5 rounded-full bg-ink-500 music-wave"
                       style={{ animationDelay: `${i * 120}ms` }}
                     />
                   ))}
@@ -659,12 +662,12 @@ export const CreatePage: React.FC = () => {
       </main>
 
       {/* Input Area: 在 BottomNav(64px) 上方，MiniPlayer 显示时再往上推 72px */}
-      <div className="fixed left-0 right-0 bg-white border-t border-gray-100 shadow-soft z-20 transition-[bottom] duration-300"
+      <div className="fixed left-0 right-0 bg-white border-t border-ink-100 z-20 transition-[bottom] duration-300"
         style={{ bottom: nowPlaying ? 'calc(64px + 72px)' : '64px' }}>
-        <div className="max-w-md mx-auto px-5 py-3">
-          <div className="flex items-center gap-3">
-            <button className="p-3 rounded-full bg-gray-100 text-text-secondary hover:text-primary transition-colors btn-press">
-              <Mic className="w-5 h-5" />
+        <div className="max-w-md mx-auto px-4 py-3">
+          <div className="flex items-center gap-2">
+            <button className="w-10 h-10 rounded-full border border-ink-100 flex items-center justify-center text-ink-500 hover:text-ink-900 btn-press">
+              <Mic className="w-4 h-4" />
             </button>
             <div className="flex-1 relative">
               <input
@@ -674,31 +677,36 @@ export const CreatePage: React.FC = () => {
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
                 placeholder="说说你的心情，或者想要的风格…"
                 disabled={isTyping}
-                className="w-full bg-gray-100 rounded-full px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-text-muted disabled:opacity-60"
+                className="w-full bg-ink-50 rounded-pill px-4 py-2.5 text-[14px] outline-none focus:bg-white focus:ring-1 focus:ring-ink-900 transition-all placeholder:text-ink-300 disabled:opacity-60"
               />
             </div>
             <button
               onClick={() => handleSend()}
               disabled={!inputValue.trim() || isTyping}
-              className={`p-3 rounded-full gradient-primary shadow-primary transition-all duration-300 btn-press ${inputValue.trim() && !isTyping ? 'opacity-100 scale-100' : 'opacity-50 scale-95'}`}
+              aria-label="发送"
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 btn-press ${
+                inputValue.trim() && !isTyping
+                  ? 'bg-tinder-flame text-white shadow-flame'
+                  : 'bg-ink-100 text-ink-300'
+              }`}
             >
-              <Send className="w-5 h-5 text-white" />
+              <Send className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex gap-2 mt-2 overflow-x-auto pb-1 items-center">
+          <div className="flex gap-1.5 mt-2 overflow-x-auto pb-0.5 scrollbar-hide items-center">
             {suggestions.map(s => (
               <button
                 key={s}
                 onClick={() => handleSend(s)}
                 disabled={isTyping}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-gray-100 text-xs text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+                className="flex-shrink-0 px-3 py-1.5 rounded-pill bg-ink-50 text-[12px] text-ink-900 hover:bg-ink-100 transition-colors disabled:opacity-50"
               >
                 {s}
               </button>
             ))}
             <button
               onClick={() => setSuggestions(pickRandomSuggestions(5))}
-              className="flex-shrink-0 px-2 py-1.5 rounded-full bg-primary/10 text-xs text-primary hover:bg-primary/20 transition-colors"
+              className="flex-shrink-0 w-7 h-7 rounded-full bg-ink-50 text-[12px] text-ink-500 hover:bg-ink-100 transition-colors flex items-center justify-center"
               title="换一批"
             >
               ⟳

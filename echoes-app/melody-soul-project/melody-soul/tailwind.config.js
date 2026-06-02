@@ -11,45 +11,66 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#6366F1', // Indigo
+          DEFAULT: '#6366F1', // Indigo（保留作为品牌色，但克制使用）
           light: '#818CF8',
           dark: '#4F46E5',
         },
         secondary: {
-          DEFAULT: '#EC4899', // Pink
+          DEFAULT: '#EC4899',
           light: '#F472B6',
           dark: '#DB2777',
         },
-        accent: '#F59E0B', // Amber
-        success: '#10B981', // Emerald
-        warning: '#F59E0B', // Amber
-        // Light theme backgrounds
+        // Tinder-style 强对比配色
+        tinder: {
+          flame: '#FE3C72',   // 主操作色（爱心 / CTA）
+          lime:  '#A6FF59',   // 强调（喜欢）
+          super: '#42CCC7',   // 二级强调（超喜欢）
+          boost: '#9747FF',   // boost / 紫
+          spark: '#FBA94C',   // 提醒
+        },
+        ink: {
+          900: '#0B0B0F',     // 近黑
+          800: '#17171C',
+          700: '#22232A',
+          500: '#5A5A66',
+          300: '#A1A1AA',
+          100: '#E6E7EB',
+          50:  '#F4F4F7',
+        },
+        accent: '#FE3C72',
+        success: '#10B981',
+        warning: '#FBA94C',
         bg: {
-          primary: '#FAFBFC',
-          secondary: '#F3F4F6',
+          primary: '#FFFFFF',
+          secondary: '#F4F4F7',
           tertiary: '#EEF2FF',
         },
         surface: '#FFFFFF',
         'card-bg': '#FFFFFF',
-        // Text colors
-        'text-primary': '#1F2937',
-        'text-secondary': '#6B7280',
-        'text-muted': '#9CA3AF',
-        // Borders
+        'text-primary': '#0B0B0F',
+        'text-secondary': '#5A5A66',
+        'text-muted': '#A1A1AA',
         border: {
-          DEFAULT: '#E5E7EB',
-          light: '#F3F4F6',
+          DEFAULT: '#E6E7EB',
+          light: '#F4F4F7',
         },
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.06), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1)',
+        'card': '0 12px 32px -12px rgba(11, 11, 15, 0.18)',
+        'pop': '0 8px 24px -4px rgba(11, 11, 15, 0.22)',
+        'flame': '0 8px 22px -4px rgba(254, 60, 114, 0.45)',
         'primary': '0 4px 14px 0 rgba(99, 102, 241, 0.35)',
         'pink': '0 4px 14px 0 rgba(236, 72, 153, 0.35)',
+      },
+      borderRadius: {
+        'card': '20px',
+        'pill': '999px',
       },
       animation: {
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
