@@ -4,6 +4,8 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const axios = require('axios')
+const fs = require('fs')
+const path = require('path')
 const {
   generateMusic,
   getMusicStatus,
@@ -14,6 +16,42 @@ const { chatWithQwen } = require('./chatService')
 const app = express()
 const PORT = process.env.PORT || 3001
 const MUSIC_PROVIDER = process.env.MUSIC_PROVIDER || 'mureka'
+
+// ── 音频本地缓存（下载 stable mp3 到磁盘，手机播完整文件无缓冲）──
+const AUDIO_CACHE_DIR = path.join(__dirname, 'public', 'music')
+fs.mkdirSync(AUDIO_CACHE_DIR, { recursive: true })
+// taskId → Promise<localUrl | null>
+const _audioCachePromises = new Map()
+
+async function ensureAudioCached(taskId, remoteUrl) {
+  const filePath = path.join(AUDIO_CACHE_DIR, `${taskId}.mp3`)
+  const localUrl = `/music/${taskId}.mp3`
+
+  if (fs.existsSync(filePath)) return localUrl
+  if (_audioCachePromises.has(taskId)) return _audioCachePromises.get(taskId)
+
+  const promise = (async () => {
+    try {
+      console.log(`⬇️  Caching audio: ${taskId}`)
+      const resp = await axios.get(remoteUrl, { responseType: 'stream', timeout: 120000 })
+      await new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(filePath)
+        resp.data.pipe(writer)
+        writer.on('finish', resolve)
+        writer.on('error', err => { fs.unlink(filePath, () => {}); reject(err) })
+      })
+      console.log(`✅ Audio cached: ${taskId}.mp3`)
+      return localUrl
+    } catch (err) {
+      console.error(`❌ Audio cache failed (${taskId}):`, err.message)
+      _audioCachePromises.delete(taskId)
+      return null
+    }
+  })()
+
+  _audioCachePromises.set(taskId, promise)
+  return promise
+}
 
 // Middleware
 const allowedOrigins = (process.env.CORS_ORIGINS || '')
@@ -29,6 +67,9 @@ app.use(cors({
   }
 }))
 app.use(express.json())
+
+// 本地缓存 mp3 静态文件服务
+app.use('/music', express.static(AUDIO_CACHE_DIR, { maxAge: '7d' }))
 
 // 请求日志
 app.use((req, res, next) => {
@@ -117,15 +158,27 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
     const { taskId, musicType } = req.params
     const result = await getMusicStatus(taskId, musicType || 'instrumental')
 
-    // 把 Mureka 外链替换成服务端代理 URL，避免用户直连跨网缓冲
     if (result.audioUrl && /^https?:\/\//.test(result.audioUrl)) {
-      const proxied = `/api/audio-proxy?url=${encodeURIComponent(result.audioUrl)}`
-      result.audioUrl = proxied
-      if (result.data) {
-        if (result.data.music_url) result.data.music_url = proxied
-        if (result.data.audio_url) result.data.audio_url = proxied
-        if (result.data.stream_url) result.data.stream_url = proxied
-        if (result.data.stable_url) result.data.stable_url = proxied
+      if (result.isStable) {
+        // stable URL：完整下载到本地，手机播静态文件，无缓冲
+        const localUrl = await ensureAudioCached(taskId, result.audioUrl)
+        if (localUrl) {
+          result.audioUrl = localUrl
+          if (result.data) {
+            result.data.music_url = localUrl
+            result.data.audio_url = localUrl
+            if (result.data.stable_url) result.data.stable_url = localUrl
+          }
+        }
+      } else {
+        // 仍在流式生成中：走代理，比直连 Mureka CDN 快
+        const proxied = `/api/audio-proxy?url=${encodeURIComponent(result.audioUrl)}`
+        result.audioUrl = proxied
+        if (result.data) {
+          if (result.data.music_url) result.data.music_url = proxied
+          if (result.data.audio_url) result.data.audio_url = proxied
+          if (result.data.stream_url) result.data.stream_url = proxied
+        }
       }
     }
 
