@@ -317,8 +317,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           const d = (e.target as HTMLAudioElement).duration
           setDuration(d >= 0 ? d : 0)
         }}
-        onError={() => {
-          console.warn('Audio source failed to load (可能流式 URL 已过期，或 seed 文件还没生成)')
+        onError={e => {
+          const audio = e.target as HTMLAudioElement
+          const code = audio.error?.code
+          const msg = audio.error?.message
+          // code=1: 浏览器主动取消（切歌/reload）
+          // code=4 + 无 src: audio 初始化时 src="" 的误触发
+          if (code === 1) return
+          if (code === 4 && !audio.currentSrc) return
+          console.warn(`Audio error code=${code} msg=${msg} time=${audio.currentTime.toFixed(1)}s src=${audio.currentSrc}`)
           setIsPlayingState(false)
           setIsBuffering(false)
         }}

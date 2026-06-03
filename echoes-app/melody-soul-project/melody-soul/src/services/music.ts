@@ -82,7 +82,8 @@ function delay(ms: number) {
 }
 
 function getStableAudioUrl(data: MusicApiResponse) {
-  return data.data?.stable_url || ''
+  // 检查所有稳定 URL 字段（不含 stream_url）
+  return data.data?.stable_url || data.data?.music_url || data.data?.audio_url || ''
 }
 
 function getAudioUrl(data: MusicApiResponse) {

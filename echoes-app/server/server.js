@@ -20,27 +20,56 @@ const MUSIC_PROVIDER = process.env.MUSIC_PROVIDER || 'mureka'
 // ── 音频本地缓存（下载 stable mp3 到磁盘，手机播完整文件无缓冲）──
 const AUDIO_CACHE_DIR = path.join(__dirname, 'public', 'music')
 fs.mkdirSync(AUDIO_CACHE_DIR, { recursive: true })
+
+// 启动时清除没有 .done 标记的 mp3（stream 下载的不完整文件）
+try {
+  const allFiles = fs.readdirSync(AUDIO_CACHE_DIR)
+  allFiles.forEach(f => {
+    if (!f.endsWith('.mp3')) return
+    const taskId = f.replace('.mp3', '')
+    const fp = path.join(AUDIO_CACHE_DIR, f)
+    const marker = path.join(AUDIO_CACHE_DIR, `${taskId}.done`)
+    // 没有 .done 标记 = 未完整下载（stream 截断或重启中断），删除
+    if (!fs.existsSync(marker)) {
+      fs.unlinkSync(fp)
+      console.log(`🗑️  Removed incomplete cache: ${f}`)
+    }
+  })
+} catch (e) { /* ignore */ }
+
 // taskId → Promise<localUrl | null>
 const _audioCachePromises = new Map()
 
+// 只从 stable URL 下载；写完后创建 .done 标记，防止截断文件被播放
 async function ensureAudioCached(taskId, remoteUrl) {
   const filePath = path.join(AUDIO_CACHE_DIR, `${taskId}.mp3`)
+  const markerPath = path.join(AUDIO_CACHE_DIR, `${taskId}.done`)
   const localUrl = `/api/music-cache/${taskId}.mp3`
 
-  if (fs.existsSync(filePath)) return localUrl
+  // 已有完整文件（有 .done 标记且不在下载中）
+  if (fs.existsSync(filePath) && fs.existsSync(markerPath) && !_audioCachePromises.has(taskId)) {
+    return localUrl
+  }
   if (_audioCachePromises.has(taskId)) return _audioCachePromises.get(taskId)
 
   const promise = (async () => {
     try {
-      console.log(`⬇️  Caching audio: ${taskId}`)
-      const resp = await axios.get(remoteUrl, { responseType: 'stream', timeout: 120000 })
+      // 删除可能存在的旧的不完整文件
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+      if (fs.existsSync(markerPath)) fs.unlinkSync(markerPath)
+
+      console.log(`⬇️  Caching audio from stable URL: ${taskId}`)
+      const resp = await axios.get(remoteUrl, { responseType: 'stream', timeout: 180000 })
       await new Promise((resolve, reject) => {
         const writer = fs.createWriteStream(filePath)
         resp.data.pipe(writer)
         writer.on('finish', resolve)
         writer.on('error', err => { fs.unlink(filePath, () => {}); reject(err) })
       })
+      // 写入完成标记
+      fs.writeFileSync(markerPath, 'done')
       console.log(`✅ Audio cached: ${taskId}.mp3`)
+      _audioCachePromises.delete(taskId)
       return localUrl
     } catch (err) {
       console.error(`❌ Audio cache failed (${taskId}):`, err.message)
@@ -159,9 +188,10 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
     const result = await getMusicStatus(taskId, musicType || 'instrumental')
 
     const filePath = path.join(AUDIO_CACHE_DIR, `${taskId}.mp3`)
+    const markerPath = path.join(AUDIO_CACHE_DIR, `${taskId}.done`)
 
-    // ① 本地已缓存 → 直接返回静态文件 URL
-    if (fs.existsSync(filePath)) {
+    // ① 本地已有完整缓存（.done 标记存在）→ 直接返回静态文件 URL
+    if (fs.existsSync(filePath) && fs.existsSync(markerPath) && !_audioCachePromises.has(taskId)) {
       const localUrl = `/api/music-cache/${taskId}.mp3`
       result.audioUrl = localUrl
       result.isStable = true
@@ -169,6 +199,7 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
       if (result.data) {
         result.data.music_url = localUrl
         result.data.audio_url = localUrl
+        result.data.stable_url = localUrl
         result.data.stream_url = null
         result.data.status = 'completed'
       }
@@ -177,25 +208,23 @@ app.get('/api/music/status/:taskId/:musicType?', async (req, res) => {
 
     if (result.audioUrl && /^https?:\/\//.test(result.audioUrl)) {
       if (result.isStable) {
-        // ② stable URL：阻塞下载（通常很快），完成后返回本地路径
+        // ② stable URL：阻塞下载完整文件，完成后返回本地路径
         const localUrl = await ensureAudioCached(taskId, result.audioUrl)
         if (localUrl) {
           result.audioUrl = localUrl
+          result.isStable = true
+          result.status = 'completed'
           if (result.data) {
             result.data.music_url = localUrl
             result.data.audio_url = localUrl
-            if (result.data.stable_url) result.data.stable_url = localUrl
+            result.data.stable_url = localUrl
+            result.data.stream_url = null
+            result.data.status = 'completed'
           }
         }
       } else {
-        // ③ stream URL：后台下载，下载完成前告诉前端继续等待（不把流推给手机）
-        if (!_audioCachePromises.has(taskId)) {
-          console.log(`⬇️  Background stream download: ${taskId}`)
-          ensureAudioCached(taskId, result.audioUrl)
-            .then(u => u && console.log(`✅ Stream cached: ${taskId}`))
-            .catch(e => console.error(`❌ Stream cache failed (${taskId}):`, e.message))
-        }
-        // 隐藏流 URL，告知前端仍在处理，让它继续轮询
+        // ③ stream URL（Mureka 还在生成中）：不下载，等 stable URL 出来
+        // stream 是实时生成流，随时可能被截断，不做缓存
         result.audioUrl = null
         result.status = 'processing'
         if (result.data) {

@@ -271,14 +271,6 @@ export const CreatePage: React.FC = () => {
       // 把生成完成的音乐推到全局 MiniPlayer
       // 行为规则：如果当前有别的音乐正在播放，则不打断，只静默写入卡片；用户主动点才播
       if (result.musicUrl) {
-        // 预热：立即在 <head> 插一条 preload link，让浏览器提前下载 mp3
-        try {
-          const preload = document.createElement('link')
-          preload.rel = 'preload'
-          preload.as = 'audio'
-          preload.href = result.musicUrl
-          document.head.appendChild(preload)
-        } catch {}
         const trackPayload = {
           id: musicMsgId,
           title: finalTitle,

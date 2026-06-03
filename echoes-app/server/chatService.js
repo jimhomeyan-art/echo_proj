@@ -295,13 +295,15 @@ function applyGenerationPolicy(result, messages) {
   const wantsCreate = hasCreationIntent(messages)
   const lastUser = getLastUserText(messages)
   const wantsInstrumental = detectInstrumentalRequest(messages)
-  // 默认按 song 生成，除非用户明确要纯音乐
-  const pendingType = wantsInstrumental ? 'instrumental' : (wantsCreate ? 'song' : null)
   const userConfirmed = isAffirmative(lastUser)
   const aiAskedConfirm = lastAssistantHasConfirmQuestion(messages)
   const aiAnnouncedCreation = lastAssistantAnnouncesCreation(messages)
-  const replyIsQuestion = replyContainsOpenQuestion(result.reply)
   const aiAlreadyStarted = aiAlreadyAskedToStart(messages)
+  // AI 已宣告创作 / 确认要开始时，也算有 pendingType（用户只说"嗯嗯/开始吧"时关键词检测会漏）
+  const pendingType = wantsInstrumental
+    ? 'instrumental'
+    : (wantsCreate || aiAnnouncedCreation || aiAlreadyStarted) ? 'song' : null
+  const replyIsQuestion = replyContainsOpenQuestion(result.reply)
   const userPushed = userRepeatedlyAffirmed(messages)
   const vocalGender = detectVocalGender(messages)
   const hasGenerated = alreadyGeneratedMusic(messages)
