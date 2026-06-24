@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react'
 import { initialSavedCapsules } from '../data/mockData'
+import { useAuth } from './AuthContext'
 
 export interface ChatMusicCard {
   id: string
@@ -106,6 +107,36 @@ const initialGreeting: ChatBubbleMessage = {
 
 const ChatContext = createContext<ChatContextValue | null>(null)
 
+const CHAT_VERSION = 'v1'
+function chatKey(userId: number | string) {
+  return `echoes.chat.${userId}.${CHAT_VERSION}`
+}
+
+/** 把刷新时仍在「生成中」的音乐卡片转成失败态（任务已丢失，无法恢复） */
+function sanitizeMessages(list: ChatBubbleMessage[]): ChatBubbleMessage[] {
+  return list.map(m => {
+    if (m.type === 'music' && m.music?.isGenerating) {
+      return { ...m, music: { ...m.music, isGenerating: false, status: '生成已中断，请重新创作', error: '已中断' } }
+    }
+    // 命名卡片若停在选择/输入态，刷新后无意义，标记完成
+    if (m.type === 'naming' && m.naming && m.naming.status !== 'done') {
+      return { ...m, naming: { ...m.naming, status: 'done' } }
+    }
+    return m
+  })
+}
+
+function loadMessages(userId: number | string): ChatBubbleMessage[] {
+  try {
+    const raw = localStorage.getItem(chatKey(userId))
+    if (raw) {
+      const parsed = JSON.parse(raw) as ChatBubbleMessage[]
+      if (Array.isArray(parsed) && parsed.length > 0) return sanitizeMessages(parsed)
+    }
+  } catch {}
+  return [initialGreeting]
+}
+
 const STORAGE_KEY_CAPSULES = 'echoes.capsules.v1'
 
 const CAPSULES_VERSION = 'v2' // ← 改这里触发自动重置
@@ -140,7 +171,9 @@ function loadCapsules(): CapsuleEntry[] {
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [messages, setMessages] = useState<ChatBubbleMessage[]>([initialGreeting])
+  const { user } = useAuth()
+  const userKey = user ? user.id : 'guest'
+  const [messages, setMessages] = useState<ChatBubbleMessage[]>(() => loadMessages(userKey))
   const [isTyping, setIsTyping] = useState(false)
   const [activeMusicGen, setActiveMusicGen] = useState(false)
   const [nowPlaying, setNowPlayingState] = useState<NowPlaying | null>(null)
@@ -156,6 +189,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY_CAPSULES, JSON.stringify(capsules)) } catch {}
   }, [capsules])
+
+  // 持久化创作对话（按用户隔离）
+  useEffect(() => {
+    try { localStorage.setItem(chatKey(userKey), JSON.stringify(messages)) } catch {}
+  }, [messages, userKey])
 
   const openFullPlayer = useCallback(() => setIsFullPlayerOpen(true), [])
   const closeFullPlayer = useCallback(() => setIsFullPlayerOpen(false), [])
@@ -228,7 +266,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsTyping(false)
     setActiveMusicGen(false)
     collectedTextRef.current = ''
-  }, [])
+    try { localStorage.removeItem(chatKey(userKey)) } catch {}
+  }, [userKey])
 
   // 跳转到指定秒数
   const seek = useCallback((sec: number) => {
