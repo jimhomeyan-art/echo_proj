@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react'
-import { ChevronDown, Play, Pause, SkipBack, SkipForward, Heart, Share2, Download, MoreVertical } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { ChevronDown, Play, Pause, SkipBack, SkipForward, Heart, Share2, Download, MoreVertical, Check } from 'lucide-react'
 import { useChat } from '../../context/ChatContext'
 import { EchoAvatar } from '../common/EchoAvatar'
 import { ProgressBar } from '../common/ProgressBar'
+import { ShareToFriendSheet } from '../chat/ShareToFriendSheet'
 
 export const FullPlayer: React.FC = () => {
   const {
@@ -10,6 +11,9 @@ export const FullPlayer: React.FC = () => {
     currentTime, duration, seek, isBuffering,
     isCapsuled, toggleCapsule,
   } = useChat()
+
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareToast, setShareToast] = useState('')
 
   useEffect(() => {
     if (isFullPlayerOpen) {
@@ -191,7 +195,11 @@ export const FullPlayer: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-center gap-3 mt-4">
-            <button aria-label="分享" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press">
+            <button
+              onClick={() => setShareOpen(true)}
+              aria-label="分享"
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 btn-press"
+            >
               <Share2 className="w-4 h-4" />
             </button>
             {nowPlaying.url && (
@@ -204,6 +212,31 @@ export const FullPlayer: React.FC = () => {
         </div>
 
       </div>
+
+      {shareOpen && (
+        <ShareToFriendSheet
+          music={{
+            id: nowPlaying.id,
+            title: nowPlaying.title,
+            cover: nowPlaying.cover,
+            url: nowPlaying.url,
+            mood: nowPlaying.mood,
+          }}
+          onClose={() => setShareOpen(false)}
+          onShared={(name) => {
+            setShareOpen(false)
+            setShareToast(`已分享给 ${name}`)
+            setTimeout(() => setShareToast(''), 2200)
+          }}
+        />
+      )}
+
+      {shareToast && (
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-24 z-[130] bg-white text-ink-900 text-[13px] px-4 py-2 rounded-pill shadow-lg flex items-center gap-1.5 animate-slide-up">
+          <Check className="w-4 h-4 text-echo-green" />
+          {shareToast}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Mic, Sparkles, Clock, Share2, Heart, Download, X, Music2, Play, Pause, Loader2, Check } from 'lucide-react'
+import { Send, Mic, Sparkles, Clock, Share2, Heart, Download, X, Music2, Play, Pause, Check } from 'lucide-react'
 import { sendChatMessage, type ChatMessage } from '../services/chat'
 import { generateEmotionMusic, type MusicGenerationResult } from '../services/music'
 import { useChat, type ChatBubbleMessage, type ChatMusicCard } from '../context/ChatContext'
 import { EchoAvatar } from '../components/common/EchoAvatar'
 import { NamingCard } from '../components/common/NamingCard'
 import { currentUser } from '../data/mockData'
-import { listFriends } from '../services/friends'
-import { sendMessage } from '../services/im'
-import type { AuthUser } from '../services/auth'
-
-interface SharePayload { id: string; title: string; cover?: string; duration?: string; url?: string; mood?: string }
+import { ShareToFriendSheet, type ShareMusic } from '../components/chat/ShareToFriendSheet'
 
 type Message = ChatBubbleMessage
 type MusicCard = ChatMusicCard
@@ -155,7 +151,7 @@ export const CreatePage: React.FC = () => {
   const [inputValue, setInputValue] = useState('')
   const [showHistory, setShowHistory] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>(() => pickRandomSuggestions(5))
-  const [shareMusic, setShareMusic] = useState<SharePayload | null>(null)
+  const [shareMusic, setShareMusic] = useState<ShareMusic | null>(null)
   const [shareToast, setShareToast] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -755,85 +751,11 @@ export const CreatePage: React.FC = () => {
       )}
 
       {shareToast && (
-        <div className="fixed left-1/2 -translate-x-1/2 bottom-32 z-[70] bg-ink-900 text-white text-[13px] px-4 py-2 rounded-pill shadow-lg flex items-center gap-1.5 animate-slide-up">
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-32 z-[130] bg-ink-900 text-white text-[13px] px-4 py-2 rounded-pill shadow-lg flex items-center gap-1.5 animate-slide-up">
           <Check className="w-4 h-4 text-echo-green" />
           {shareToast}
         </div>
       )}
-    </div>
-  )
-}
-
-const ShareToFriendSheet: React.FC<{
-  music: SharePayload
-  onClose: () => void
-  onShared: (friendName: string) => void
-}> = ({ music, onClose, onShared }) => {
-  const [friends, setFriends] = useState<AuthUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [sendingId, setSendingId] = useState<number | null>(null)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    listFriends()
-      .then(setFriends)
-      .catch(() => setError('加载好友失败'))
-      .finally(() => setLoading(false))
-  }, [])
-
-  const share = async (f: AuthUser) => {
-    if (sendingId) return
-    setSendingId(f.id)
-    setError('')
-    try {
-      await sendMessage(f.id, 'music', music)
-      onShared(f.nickname)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '分享失败')
-      setSendingId(null)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/30" />
-      <div
-        className="relative w-full max-w-md mx-auto bg-white rounded-t-2xl max-h-[70vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
-          <h3 className="text-[16px] font-semibold text-ink-900">分享《{music.title}》给</h3>
-          <button onClick={onClose} className="p-1 text-ink-500"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="overflow-y-auto p-3">
-          {error && <p className="text-center text-[13px] text-tinder-flame py-2">{error}</p>}
-          {loading ? (
-            <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 text-ink-300 animate-spin" /></div>
-          ) : friends.length === 0 ? (
-            <p className="text-center text-[13px] text-ink-400 py-10">还没有好友，先去添加吧</p>
-          ) : (
-            <div className="space-y-1">
-              {friends.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => share(f)}
-                  disabled={sendingId !== null}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-card hover:bg-ink-50 text-left disabled:opacity-50"
-                >
-                  <img src={f.avatar} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-ink-900 truncate">{f.nickname}</p>
-                    <p className="text-[12px] text-ink-500 truncate">@{f.username}</p>
-                  </div>
-                  {sendingId === f.id
-                    ? <Loader2 className="w-4 h-4 text-echo-green animate-spin flex-shrink-0" />
-                    : <Share2 className="w-4 h-4 text-echo-green flex-shrink-0" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
