@@ -12,6 +12,17 @@ const {
   listSupportedEmotions
 } = require('./musicService')
 const { chatWithQwen } = require('./chatService')
+const { register, login, getUserById, updateProfile, authMiddleware, DEFAULT_AVATARS } = require('./authService')
+const {
+  searchUsers,
+  sendRequest,
+  listIncoming,
+  respondRequest,
+  listFriends
+} = require('./friendService')
+const { listConversations, getMessages } = require('./messageService')
+const { attachSocket } = require('./socketServer')
+const http = require('http')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -113,6 +124,117 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     musicProvider: MUSIC_PROVIDER
   })
+})
+
+// ── 认证接口 ──
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const result = await register(req.body || {})
+    res.json({ success: true, data: result })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '注册失败' })
+  }
+})
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const result = await login(req.body || {})
+    res.json({ success: true, data: result })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '登录失败' })
+  }
+})
+
+// 用当前 token 换取自己的资料（前端启动时校验登录态）
+app.get('/api/auth/me', authMiddleware, (req, res) => {
+  const user = getUserById(req.userId)
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' })
+  res.json({ success: true, data: { user } })
+})
+
+// 更新自己的资料（昵称/简介/头像）
+app.patch('/api/auth/me', authMiddleware, (req, res) => {
+  try {
+    const user = updateProfile(req.userId, req.body || {})
+    res.json({ success: true, data: { user } })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '更新失败' })
+  }
+})
+
+// 可选头像列表
+app.get('/api/auth/avatars', (req, res) => {
+  res.json({ success: true, data: DEFAULT_AVATARS })
+})
+
+// ── 好友接口（均需登录）──
+// 搜索用户
+app.get('/api/friends/search', authMiddleware, (req, res) => {
+  try {
+    const data = searchUsers(req.userId, req.query.q)
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '搜索失败' })
+  }
+})
+
+// 好友列表
+app.get('/api/friends', authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, data: listFriends(req.userId) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取好友失败' })
+  }
+})
+
+// 收到的好友申请
+app.get('/api/friends/requests', authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, data: listIncoming(req.userId) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取申请失败' })
+  }
+})
+
+// 发送好友申请
+app.post('/api/friends/request', authMiddleware, (req, res) => {
+  try {
+    const data = sendRequest(req.userId, (req.body || {}).targetId)
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '申请失败' })
+  }
+})
+
+// 同意 / 拒绝申请
+app.post('/api/friends/respond', authMiddleware, (req, res) => {
+  try {
+    const { requestId, action } = req.body || {}
+    const data = respondRequest(req.userId, requestId, action === 'accept' ? 'accept' : 'reject')
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '操作失败' })
+  }
+})
+
+// ── 会话 / 消息接口（均需登录）──
+// 会话列表
+app.get('/api/conversations', authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, data: listConversations(req.userId) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取会话失败' })
+  }
+})
+
+// 与某好友的历史消息
+app.get('/api/conversations/:friendId/messages', authMiddleware, (req, res) => {
+  try {
+    const data = getMessages(req.userId, req.params.friendId)
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取消息失败' })
+  }
 })
 
 // AI 治愈聊天接口
@@ -346,16 +468,19 @@ app.get('/api/audio-proxy', async (req, res) => {
   }
 })
 
-// 启动服务器
-app.listen(PORT, () => {
+// 启动服务器（http server + socket.io）
+const httpServer = http.createServer(app)
+attachSocket(httpServer)
+
+httpServer.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════╗
 ║     Echoes Backend Server                  ║
 ║     ─────────────────────────────          ║
 ║     Server running on port ${PORT}            ║
 ║     Music provider: ${MUSIC_PROVIDER}              ║
+║     Realtime: socket.io ON                  ║
 ║     Health check: /health                   ║
-║     Music API: /api/music/generate          ║
 ╚════════════════════════════════════════════╝
   `)
 })

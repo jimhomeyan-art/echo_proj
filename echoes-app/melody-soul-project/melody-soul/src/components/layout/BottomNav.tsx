@@ -4,6 +4,7 @@ import { Radio, MessageCircle, Pill, User, Music2 } from 'lucide-react';
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  unreadCount?: number;
 }
 
 const navItems = [
@@ -14,7 +15,7 @@ const navItems = [
   { id: 'profile', icon: User, label: '我的' },
 ];
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
+export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, unreadCount = 0 }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-t border-white/60">
       <div
@@ -50,13 +51,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           }
 
           // 普通 tab：active 时整块变黑 pill（icon + label 同色）
+          const badge = item.id === 'friends' ? unreadCount : 0;
           return (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
               aria-label={item.label}
               className={`
-                flex items-center gap-1.5 px-3.5 py-2 rounded-pill btn-press
+                relative flex items-center gap-1.5 px-3.5 py-2 rounded-pill btn-press
                 transition-colors duration-200
                 ${isActive
                   ? 'bg-ink-900 text-white'
@@ -67,6 +69,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
               {isActive && (
                 <span className="text-[12px] font-semibold whitespace-nowrap">
                   {item.label}
+                </span>
+              )}
+              {badge > 0 && (
+                <span className="absolute top-0.5 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-tinder-flame text-white text-[10px] font-semibold flex items-center justify-center">
+                  {badge > 99 ? '99+' : badge}
                 </span>
               )}
             </button>

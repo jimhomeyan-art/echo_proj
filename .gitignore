@@ -71,3 +71,14 @@ echoes-app/project.private.config.json
 
 # 个人持久化数据
 .codemaker/persisted/
+
+# 运行时数据库（不提交）
+echoes-app/server/data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# 媒体 / 缓存产物
+*.mp4
+*.v2cache

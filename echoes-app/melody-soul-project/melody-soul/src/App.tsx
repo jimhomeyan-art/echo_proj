@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { BottomNav } from './components/layout/BottomNav';
 import { MiniPlayer } from './components/layout/MiniPlayer';
 import { FullPlayer } from './components/layout/FullPlayer';
@@ -7,7 +8,10 @@ import { ChannelPage } from './pages/Channel';
 import { CapsulesPage } from './pages/Capsules';
 import { ProfilePage } from './pages/Profile';
 import { FriendsPage } from './pages/Friends';
+import { LoginPage } from './pages/Login';
 import { ChatProvider, useChat } from './context/ChatContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { IMProvider, useIM } from './context/IMContext';
 
 const TAB_PAGES: Record<string, React.ReactNode> = {
   channel: <ChannelPage />,
@@ -20,6 +24,7 @@ const TAB_PAGES: Record<string, React.ReactNode> = {
 function AppContent() {
   const [activeTab, setActiveTab] = useState('create');
   const { nowPlaying } = useChat();
+  const { totalUnread } = useIM();
 
   // 普通页面（非 Create / Friends 聊天）的滚动区域底部留白
   // BottomNav 64 + MiniPlayer 72(可选) + 安全距 16
@@ -53,7 +58,7 @@ function AppContent() {
         })}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} unreadCount={totalUnread} />
 
       {/* MiniPlayer 全局存在；没有 nowPlaying 时内部自己 return null */}
       <MiniPlayer />
@@ -66,8 +71,33 @@ function AppContent() {
 
 function App() {
   return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
+  );
+}
+
+// 登录门禁：未登录 → 登录页；加载中 → loading；已登录 → 主应用
+function Gate() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F2F3F5] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-echo-green animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return (
     <ChatProvider>
-      <AppContent />
+      <IMProvider>
+        <AppContent />
+      </IMProvider>
     </ChatProvider>
   );
 }
