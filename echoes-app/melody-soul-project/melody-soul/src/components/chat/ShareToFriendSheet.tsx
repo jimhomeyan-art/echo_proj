@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Loader2, Share2 } from 'lucide-react'
+import { X, Loader2, Share2, Link2, Check } from 'lucide-react'
 import { listFriends } from '../../services/friends'
 import { sendMessage } from '../../services/im'
 import type { AuthUser } from '../../services/auth'
+import { buildShareUrl, copyText, weiboShareUrl } from '../../services/share'
 
 export interface ShareMusic {
   id: string
@@ -23,6 +24,7 @@ export const ShareToFriendSheet: React.FC<{
   const [loading, setLoading] = useState(true)
   const [sendingId, setSendingId] = useState<number | null>(null)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     listFriends()
@@ -42,6 +44,22 @@ export const ShareToFriendSheet: React.FC<{
       setError(err instanceof Error ? err.message : '分享失败')
       setSendingId(null)
     }
+  }
+
+  const shareUrl = buildShareUrl(music)
+
+  const handleCopy = async () => {
+    const ok = await copyText(shareUrl)
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } else {
+      setError('复制失败，请手动复制')
+    }
+  }
+
+  const handleWeibo = () => {
+    window.open(weiboShareUrl(shareUrl, music.title), '_blank')
   }
 
   return createPortal(
@@ -70,6 +88,26 @@ export const ShareToFriendSheet: React.FC<{
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}
         >
           {error && <p className="text-center text-[13px] text-tinder-flame py-2">{error}</p>}
+
+          {/* 外部分享 */}
+          <div className="flex items-center gap-5 px-3 py-3">
+            <button onClick={handleCopy} className="flex flex-col items-center gap-1.5 btn-press">
+              <span className="w-12 h-12 rounded-full bg-ink-50 flex items-center justify-center text-ink-900">
+                {copied ? <Check className="w-5 h-5 text-echo-green" /> : <Link2 className="w-5 h-5" />}
+              </span>
+              <span className="text-[11px] text-ink-500">{copied ? '已复制' : '复制链接'}</span>
+            </button>
+            <button onClick={handleWeibo} className="flex flex-col items-center gap-1.5 btn-press">
+              <span className="w-12 h-12 rounded-full bg-[#E6162D] flex items-center justify-center text-white text-[18px] font-bold">微</span>
+              <span className="text-[11px] text-ink-500">微博</span>
+            </button>
+          </div>
+          <p className="text-[11px] text-ink-300 px-3 pb-2">微信 / 小红书 / 抖音：复制链接后粘贴分享</p>
+
+          <div className="border-t border-ink-100 pt-2">
+            <p className="text-[12px] font-semibold text-ink-400 px-3 pb-1">发送给好友</p>
+          </div>
+
           {loading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 text-ink-300 animate-spin" /></div>
           ) : friends.length === 0 ? (

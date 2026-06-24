@@ -12,6 +12,7 @@ import { LoginPage } from './pages/Login';
 import { ChatProvider, useChat } from './context/ChatContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { IMProvider, useIM } from './context/IMContext';
+import { SharePage } from './pages/SharePage';
 
 const TAB_PAGES: Record<string, React.ReactNode> = {
   channel: <ChannelPage />,
@@ -70,6 +71,10 @@ function AppContent() {
 }
 
 function App() {
+  // 公开落地页：分享链接，无需登录
+  if (window.location.pathname === '/s') {
+    return <SharePage />;
+  }
   return (
     <AuthProvider>
       <Gate />
