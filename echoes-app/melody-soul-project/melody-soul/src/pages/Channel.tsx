@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Send, Heart, MessageCircle, Play, TrendingUp, Wifi, WifiOff, Users, Hash } from 'lucide-react';
+import { Search, Bell, Send, Heart, MessageCircle, Play, TrendingUp, Wifi, WifiOff, Users, Hash, Check } from 'lucide-react';
 import { Avatar } from '../components/common/Avatar';
 import { FeedCard } from '../components/common/FeedCard';
 import { feedPosts, recommendedUsers, currentUser } from '../data/mockData';
 import { useChat } from '../context/ChatContext';
+import { ShareToFriendSheet, type ShareMusic } from '../components/chat/ShareToFriendSheet';
 
 export const ChannelPage: React.FC = () => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -11,6 +12,8 @@ export const ChannelPage: React.FC = () => {
   const [selectedMood, setSelectedMood] = useState('平静');
   const [activeSection, setActiveSection] = useState<'feed' | 'frequency'>('feed');
   const [resonateSubTab, setResonateSubTab] = useState<'people' | 'groups'>('people');
+  const [shareMusic, setShareMusic] = useState<ShareMusic | null>(null);
+  const [shareToast, setShareToast] = useState('');
   const { setNowPlaying, openFullPlayer, toggleCapsule, isCapsuled, nowPlaying, isPlaying, togglePlay } = useChat();
 
   const moods = ['平静', '忧郁', '兴奋', '开心', '浪漫', '沉思'];
@@ -248,7 +251,14 @@ export const ChannelPage: React.FC = () => {
                       }}
                       isLiked={isCapsuled(post.music.id) || post.isLiked}
                       onComment={() => console.log('Comment', post.id)}
-                      onShare={() => console.log('Share', post.id)}
+                      onShare={() => setShareMusic({
+                        id: post.music.id,
+                        title: post.music.title,
+                        cover: post.music.cover,
+                        duration: post.music.duration,
+                        url: post.music.url,
+                        mood: post.music.mood,
+                      })}
                       onPlay={() => playPostMusic(post)}
                     />
                   </div>
@@ -503,6 +513,25 @@ export const ChannelPage: React.FC = () => {
           </>
         )}
       </main>
+
+      {shareMusic && (
+        <ShareToFriendSheet
+          music={shareMusic}
+          onClose={() => setShareMusic(null)}
+          onShared={(name) => {
+            setShareMusic(null);
+            setShareToast(`已分享给 ${name}`);
+            setTimeout(() => setShareToast(''), 2200);
+          }}
+        />
+      )}
+
+      {shareToast && (
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-32 z-[130] bg-ink-900 text-white text-[13px] px-4 py-2 rounded-pill shadow-lg flex items-center gap-1.5 animate-slide-up">
+          <Check className="w-4 h-4 text-echo-green" />
+          {shareToast}
+        </div>
+      )}
     </div>
   );
 };

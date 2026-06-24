@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Loader2, Share2 } from 'lucide-react'
 import { listFriends } from '../../services/friends'
 import { sendMessage } from '../../services/im'
@@ -43,7 +44,7 @@ export const ShareToFriendSheet: React.FC<{
     }
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[120] flex items-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40" />
       <div
@@ -98,6 +99,7 @@ export const ShareToFriendSheet: React.FC<{
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
