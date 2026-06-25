@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Loader2, Share2, Link2, Check } from 'lucide-react'
+import { X, Loader2, Share2, Link2, Check, Image as ImageIcon } from 'lucide-react'
 import { listFriends } from '../../services/friends'
 import { sendMessage } from '../../services/im'
 import type { AuthUser } from '../../services/auth'
 import { buildShareUrl, copyText, weiboShareUrl } from '../../services/share'
+import { PosterModal } from './PosterModal'
 
 export interface ShareMusic {
   id: string
@@ -25,6 +26,7 @@ export const ShareToFriendSheet: React.FC<{
   const [sendingId, setSendingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [showPoster, setShowPoster] = useState(false)
 
   useEffect(() => {
     listFriends()
@@ -101,6 +103,12 @@ export const ShareToFriendSheet: React.FC<{
               <span className="w-12 h-12 rounded-full bg-[#E6162D] flex items-center justify-center text-white text-[18px] font-bold">微</span>
               <span className="text-[11px] text-ink-500">微博</span>
             </button>
+            <button onClick={() => setShowPoster(true)} className="flex flex-col items-center gap-1.5 btn-press">
+              <span className="w-12 h-12 rounded-full bg-gradient-to-br from-echo-green to-[#0a8f43] flex items-center justify-center text-white">
+                <ImageIcon className="w-5 h-5" />
+              </span>
+              <span className="text-[11px] text-ink-500">生成海报</span>
+            </button>
           </div>
           <p className="text-[11px] text-ink-300 px-3 pb-2">微信 / 小红书 / 抖音：复制链接后粘贴分享</p>
 
@@ -137,6 +145,13 @@ export const ShareToFriendSheet: React.FC<{
           )}
         </div>
       </div>
+
+      {showPoster && (
+        <PosterModal
+          music={{ id: music.id, title: music.title, cover: music.cover, url: music.url, mood: music.mood }}
+          onClose={() => setShowPoster(false)}
+        />
+      )}
     </div>,
     document.body
   )
