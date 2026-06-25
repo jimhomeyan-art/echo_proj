@@ -5,6 +5,7 @@ import { FeedCard } from '../components/common/FeedCard';
 import { feedPosts, recommendedUsers, currentUser } from '../data/mockData';
 import { useChat } from '../context/ChatContext';
 import { ShareToFriendSheet, type ShareMusic } from '../components/chat/ShareToFriendSheet';
+import { MomentsFeed } from '../components/feed/MomentsFeed';
 
 export const ChannelPage: React.FC = () => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -220,50 +221,10 @@ export const ChannelPage: React.FC = () => {
               </div>
             </section>
 
-            {/* 最新动态 */}
-            <section className="space-y-6 pb-6">
+            {/* 最新动态（真实数据：好友 / 全站） */}
+            <section className="space-y-3 pb-2">
               <h2 className="text-[18px] font-display font-bold text-ink-900">最新动态</h2>
-              {feedPosts.map((post, index) => {
-                const isCurr = nowPlaying?.id === post.music.id;
-                return (
-                  <div
-                    key={post.id}
-                    className="animate-slide-up"
-                    style={{ animationDelay: `${index * 80}ms` }}
-                  >
-                    <FeedCard
-                      post={post}
-                      isCurrentlyPlaying={isCurr && isPlaying}
-                      onLike={() => {
-                        toggleCapsule({
-                          id: post.music.id,
-                          title: post.music.title,
-                          cover: post.music.cover,
-                          duration: post.music.duration,
-                          url: post.music.url,
-                          mood: post.music.mood,
-                          styleTag: post.music.styleTag,
-                          createdAt: new Date().toISOString().slice(0, 10),
-                          plays: 0,
-                          source: 'liked',
-                          creator: post.user.name,
-                        });
-                      }}
-                      isLiked={isCapsuled(post.music.id) || post.isLiked}
-                      onComment={() => console.log('Comment', post.id)}
-                      onShare={() => setShareMusic({
-                        id: post.music.id,
-                        title: post.music.title,
-                        cover: post.music.cover,
-                        duration: post.music.duration,
-                        url: post.music.url,
-                        mood: post.music.mood,
-                      })}
-                      onPlay={() => playPostMusic(post)}
-                    />
-                  </div>
-                );
-              })}
+              <MomentsFeed onShare={setShareMusic} />
             </section>
 
             {/* 推荐关注 */}

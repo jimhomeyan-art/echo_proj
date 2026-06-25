@@ -22,6 +22,7 @@ const {
 } = require('./friendService')
 const { listConversations, getMessages } = require('./messageService')
 const { attachSocket } = require('./socketServer')
+const { createPost, listFeed, toggleLike, listComments, addComment, incrementShare } = require('./feedService')
 const http = require('http')
 
 const app = express()
@@ -234,6 +235,65 @@ app.get('/api/conversations/:friendId/messages', authMiddleware, (req, res) => {
     res.json({ success: true, data })
   } catch (error) {
     res.status(400).json({ success: false, error: error.message || '获取消息失败' })
+  }
+})
+
+// ── 朋友动态（均需登录）──
+// 发布动态
+app.post('/api/posts', authMiddleware, (req, res) => {
+  try {
+    const { music, caption } = req.body || {}
+    const data = createPost(req.userId, music, caption)
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '发布失败' })
+  }
+})
+
+// 动态流：?scope=friends|global
+app.get('/api/posts', authMiddleware, (req, res) => {
+  try {
+    const scope = req.query.scope === 'global' ? 'global' : 'friends'
+    res.json({ success: true, data: listFeed(req.userId, scope) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取动态失败' })
+  }
+})
+
+// 点赞 / 取消
+app.post('/api/posts/:id/like', authMiddleware, (req, res) => {  try {
+    const data = toggleLike(req.userId, Number(req.params.id))
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '操作失败' })
+  }
+})
+
+// 评论列表
+app.get('/api/posts/:id/comments', authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, data: listComments(Number(req.params.id)) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '获取评论失败' })
+  }
+})
+
+// 添加评论
+app.post('/api/posts/:id/comments', authMiddleware, (req, res) => {
+  try {
+    const data = addComment(req.userId, Number(req.params.id), (req.body || {}).content)
+    res.json({ success: true, data })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '评论失败' })
+  }
+})
+
+// 转发计数 +1
+app.post('/api/posts/:id/share', authMiddleware, (req, res) => {
+  try {
+    res.json({ success: true, data: incrementShare(Number(req.params.id)) })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message || '操作失败' })
   }
 })
 

@@ -62,11 +62,49 @@ db.exec(`
     created_at INTEGER NOT NULL
   );
 
+  -- 动态（发布的音乐）
+  CREATE TABLE IF NOT EXISTS posts (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    music      TEXT    NOT NULL,          -- 音乐 JSON
+    caption    TEXT    DEFAULT '',
+    shares     INTEGER DEFAULT 0,
+    created_at INTEGER NOT NULL
+  );
+
+  -- 动态点赞
+  CREATE TABLE IF NOT EXISTS post_likes (
+    post_id    INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (post_id, user_id)
+  );
+
+  -- 动态评论
+  CREATE TABLE IF NOT EXISTS post_comments (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id    INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content    TEXT    NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+
   CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id, created_at);
   CREATE INDEX IF NOT EXISTS idx_friend_addressee ON friendships(addressee_id, status);
   CREATE INDEX IF NOT EXISTS idx_friend_requester ON friendships(requester_id, status);
+  CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
+  CREATE INDEX IF NOT EXISTS idx_post_comments ON post_comments(post_id, created_at);
 `)
 
 console.log('✅ SQLite ready:', path.join(DATA_DIR, 'echoes.db'))
+
+// 迁移：旧 posts 表补 shares 列
+try {
+  const cols = db.prepare(`PRAGMA table_info(posts)`).all()
+  if (!cols.some(c => c.name === 'shares')) {
+    db.exec(`ALTER TABLE posts ADD COLUMN shares INTEGER DEFAULT 0`)
+    console.log('🔧 Migrated: posts.shares added')
+  }
+} catch (e) { console.error('posts.shares migration failed:', e.message) }
 
 module.exports = db

@@ -7,6 +7,8 @@ import { EchoAvatar } from '../components/common/EchoAvatar'
 import { NamingCard } from '../components/common/NamingCard'
 import { currentUser } from '../data/mockData'
 import { ShareToFriendSheet, type ShareMusic } from '../components/chat/ShareToFriendSheet'
+import { PublishMomentModal } from '../components/feed/PublishMomentModal'
+import type { FeedMusic } from '../services/feed'
 
 type Message = ChatBubbleMessage
 type MusicCard = ChatMusicCard
@@ -152,6 +154,7 @@ export const CreatePage: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>(() => pickRandomSuggestions(5))
   const [shareMusic, setShareMusic] = useState<ShareMusic | null>(null)
+  const [publishMusic, setPublishMusic] = useState<FeedMusic | null>(null)
   const [shareToast, setShareToast] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -518,6 +521,7 @@ export const CreatePage: React.FC = () => {
                         const showPause = isCurrent && isPlaying
                         const liked = isCapsuled(m.id)
                         return (
+                          <>
                           <div className="flex items-center gap-2">
                             {/* 播放 */}
                             <button
@@ -613,6 +617,14 @@ export const CreatePage: React.FC = () => {
                               <Share2 className="w-4 h-4" />
                             </button>
                           </div>
+                          <button
+                            onClick={() => setPublishMusic({ id: m.id, title: m.title, cover: m.cover, url: m.url, mood: m.mood, duration: m.duration })}
+                            className="mt-2.5 w-full h-10 rounded-pill bg-echo-green/10 text-echo-green text-[13px] font-semibold flex items-center justify-center gap-1.5 btn-press hover:bg-echo-green/20"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            发布到动态
+                          </button>
+                          </>
                         )
                       })() : (
                         <p className="text-[12px] text-ink-500 text-center py-2">
@@ -755,6 +767,18 @@ export const CreatePage: React.FC = () => {
           <Check className="w-4 h-4 text-echo-green" />
           {shareToast}
         </div>
+      )}
+
+      {publishMusic && (
+        <PublishMomentModal
+          music={publishMusic}
+          onClose={() => setPublishMusic(null)}
+          onPublished={() => {
+            setPublishMusic(null)
+            setShareToast('已发布到动态')
+            setTimeout(() => setShareToast(''), 2200)
+          }}
+        />
       )}
     </div>
   )
